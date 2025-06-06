@@ -1,3 +1,7 @@
 outputs
 results
 02devp-challenge2.pdf
+.venv/
+.DS_Store
+__pycache__/
+*.pyc
