@@ -10,18 +10,18 @@ from tqdm import tqdm
 import sys
 from functools import partial
 
-from models.model_classifier import AudioMLP
+from models.model_classifier import AudioMLP, SimpleCNN, ResNetForAudio
 from models.utils import EarlyStopping, Tee
-from dataset.dataset_ESC50 import ESC50
+from dataset.dataset_ESC50 import ESC50, get_global_stats
 import config
 
 
 # mean and std of train data for every fold
-global_stats = np.array([[-54.364834, 20.853344],
-                         [-54.279022, 20.847532],
-                         [-54.18343, 20.80387],
-                         [-54.223698, 20.798292],
-                         [-54.200905, 20.949806]])
+# global_stats = np.array([[-54.364834, 20.853344],
+#                          [-54.279022, 20.847532],
+#                          [-54.18343, 20.80387],
+#                          [-54.223698, 20.798292],
+#                          [-54.200905, 20.949806]])
 
 # evaluate model on different testing data 'dataloader'
 def test(model, dataloader, criterion, device):
@@ -126,18 +126,38 @@ def fit_classifier():
 
 
 # build model from configuration.
-def make_model():
-    n = config.n_classes
-    model_constructor = config.model_constructor
-    print(model_constructor)
-    model = eval(model_constructor)
+def make_model(n_mels, n_steps):
+    model_name = config.model_name
+    n_classes = config.n_classes
+    print(f"Building model: {model_name}")
+
+    if model_name == 'AudioMLP':
+        model = AudioMLP(n_mels=n_mels,
+                         n_steps=n_steps,
+                         hidden1_size=512,
+                         hidden2_size=128,
+                         output_size=n_classes)
+    elif model_name == 'SimpleCNN':
+        model = SimpleCNN(n_classes=n_classes, n_mels=n_mels, n_steps=n_steps)
+    elif model_name == 'ResNet':
+        model = ResNetForAudio(n_classes=n_classes)
+    else:
+        raise ValueError(f"Model '{model_name}' not recognized.")
+    
     return model
 
 
 if __name__ == "__main__":
     data_path = config.esc50_path
-    use_cuda = torch.cuda.is_available()
-    device = torch.device(f"cuda:{config.device_id}" if use_cuda else "cpu")
+    
+    # Updated device selection for MPS (M1 Mac)
+    if torch.cuda.is_available():
+        device = torch.device(f"cuda:{config.device_id}")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"Using device: {device}")
 
     # digits for logging
     float_fmt = ".3f"
@@ -149,9 +169,11 @@ if __name__ == "__main__":
     # for all folds
     scores = {}
     # expensive!
-    #global_stats = get_global_stats(data_path)
+    print("Calculating global mean and std for normalization...")
+    global_stats = get_global_stats(data_path)
+    print("Done.")
     # for spectrograms
-    print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
+    # print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
     for test_fold in config.test_folds:
         experiment = os.path.join(experiment_root, f'{test_fold}')
         if not os.path.exists(experiment):
@@ -188,18 +210,23 @@ if __name__ == "__main__":
 
             print()
             # instantiate model
-            model = make_model()
+            # Get spectrogram dimensions from the dataset
+            temp_dataset = get_fold_dataset(subset="train")
+            _, temp_spec, _ = temp_dataset[0]
+            n_mels, n_steps = temp_spec.shape[1], temp_spec.shape[2]
+            
+            model = make_model(n_mels=n_mels, n_steps=n_steps)
             # model = nn.DataParallel(model, device_ids=config.device_ids)
             model = model.to(device)
             print('*****')
 
             # Define a loss function and optimizer
             criterion = nn.CrossEntropyLoss().to(device)
-
-            optimizer = torch.optim.SGD(model.parameters(),
-                                        lr=config.lr,
-                                        momentum=0.9,
-                                        weight_decay=config.weight_decay)
+            
+            # Switched to AdamW optimizer
+            optimizer = torch.optim.AdamW(model.parameters(),
+                                         lr=config.lr,
+                                         weight_decay=config.weight_decay)
 
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                         step_size=config.step_size,

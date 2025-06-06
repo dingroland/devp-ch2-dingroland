@@ -18,13 +18,13 @@ sr = 44100
 n_mels = 128
 hop_length = 512
 #n_mfcc = 42
+n_fft = 1024 # was hardcoded in dataset
 
-model_constructor = "AudioMLP(n_steps=431,\
-n_mels=config.n_mels,\
-hidden1_size=512,\
-hidden2_size=128,\
-output_size=config.n_classes,\
-time_reduce=1)"
+# Spectrogram augmentation
+freq_mask_param = 80
+time_mask_param = 80
+
+model_name = 'SimpleCNN'  # 'AudioMLP', 'SimpleCNN', or 'ResNet'
 
 # ###TRAINING
 # ratio to split off from training data

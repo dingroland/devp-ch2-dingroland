@@ -5,9 +5,10 @@ import pandas as pd
 import numpy as np
 import os
 import argparse
+from functools import partial
 
-from dataset.dataset_ESC50 import ESC50, download_extract_zip
-from train_crossval import test, make_model, global_stats
+from dataset.dataset_ESC50 import ESC50, download_extract_zip, get_global_stats
+from train_crossval import test, make_model
 import config
 
 
@@ -19,8 +20,15 @@ if __name__ == "__main__":
 
     reproducible = False
     data_path = config.esc50_path
-    use_cuda = torch.cuda.is_available()
-    device = torch.device(f"cuda:{config.device_id}" if use_cuda else "cpu")
+    
+    # Updated device selection for MPS (M1 Mac)
+    if torch.cuda.is_available():
+        device = torch.device(f"cuda:{config.device_id}")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"Using device: {device}")
 
     check_data_reproducibility = False
     if reproducible:
@@ -42,11 +50,24 @@ if __name__ == "__main__":
             file_path=experiment_root + '.zip',
         )
 
+    # for all folds
+    scores = {}
+    # expensive!
+    # print("Calculating global mean and std for normalization...")
+    global_stats = get_global_stats(data_path)
+    # print("Done.")
+    # for spectrograms
+    # print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
+    
+    # Get spectrogram dimensions from a temporary dataset
+    temp_dataset = ESC50(subset="test", test_folds={1}, root=data_path, download=True, global_mean_std=global_stats[0])
+    _, temp_spec, _ = temp_dataset[0]
+    n_mels, n_steps = temp_spec.shape[1], temp_spec.shape[2]
 
     # instantiate model
     print('*****')
-    print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
-    model = make_model()
+    # print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
+    model = make_model(n_mels=n_mels, n_steps=n_steps)
     model = model.to(device)
     print('*****')
 

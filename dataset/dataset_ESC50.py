@@ -7,14 +7,15 @@ import os
 import sys
 from functools import partial
 import numpy as np
-import librosa
+import torchaudio
+import torchaudio.transforms as T
 
 import config
 from . import transforms
 
-# CUDA for PyTorch
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+# CUDA for PyTorch is handled in the main script
+# use_cuda = torch.cuda.is_available()
+# device = torch.device("cuda" if use_cuda else "cpu")
 
 
 def download_file(url: str, fname: str, chunk_size=1024):
@@ -89,38 +90,33 @@ class ESC50(data.Dataset):
                 self.file_names = val_files
         # the number of samples in the wave (=length) required for spectrogram
         out_len = int(((config.sr * 5) // config.hop_length) * config.hop_length)
+        self.n_steps = (out_len // config.hop_length) + 1
         train = self.subset == "train"
+
+        # Waveform transformations
+        self.wave_transforms = None
         if train:
-            # augment training data with transformations that include randomness
-            # transforms can be applied on wave and spectral representation
             self.wave_transforms = transforms.Compose(
-                torch.Tensor,
-                #transforms.RandomScale(max_scale=1.25),
                 transforms.RandomPadding(out_len=out_len),
                 transforms.RandomCrop(out_len=out_len)
             )
-
-            self.spec_transforms = transforms.Compose(
-                # to Tensor and prepend singleton dim
-                #lambda x: torch.Tensor(x).unsqueeze(0),
-                # lambda non-pickleable, problem on windows, replace with partial function
-                torch.Tensor,
-                partial(torch.unsqueeze, dim=0),
-            )
-
         else:
-            # for testing transforms are applied deterministically to support reproducible scores
             self.wave_transforms = transforms.Compose(
-                torch.Tensor,
-                # disable randomness
                 transforms.RandomPadding(out_len=out_len, train=False),
                 transforms.RandomCrop(out_len=out_len, train=False)
             )
+        
+        # Spectrogram transformations
+        self.spec_transforms = torch.nn.Sequential(
+            T.MelSpectrogram(sample_rate=config.sr, n_fft=config.n_fft, n_mels=config.n_mels, hop_length=config.hop_length),
+            T.AmplitudeToDB(stype='power', top_db=80)
+        )
 
-            self.spec_transforms = transforms.Compose(
-                torch.Tensor,
-                partial(torch.unsqueeze, dim=0),
-            )
+        self.aug_transforms = torch.nn.Sequential()
+        if train:
+            self.aug_transforms.append(T.FrequencyMasking(freq_mask_param=config.freq_mask_param))
+            self.aug_transforms.append(T.TimeMasking(time_mask_param=config.time_mask_param))
+            
         self.global_mean = global_mean_std[0]
         self.global_std = global_mean_std[1]
         self.n_mfcc = config.n_mfcc if hasattr(config, "n_mfcc") else None
@@ -131,57 +127,39 @@ class ESC50(data.Dataset):
     def __getitem__(self, index):
         file_name = self.file_names[index]
         path = os.path.join(self.root, file_name)
-        wave, rate = librosa.load(path, sr=config.sr)
+        
+        # Use torchaudio to load audio
+        try:
+            waveform, sample_rate = torchaudio.load(path, normalize=True)
+        except Exception as e:
+            print(f"Error loading file {path}: {e}")
+            # Return a dummy sample
+            return file_name, torch.zeros((1, config.n_mels, self.n_steps)), 0
 
+        # Resample if necessary
+        if sample_rate != config.sr:
+            resampler = T.Resample(orig_freq=sample_rate, new_freq=config.sr)
+            waveform = resampler(waveform)
+
+        # Apply wave transforms
+        if self.wave_transforms:
+             waveform = self.wave_transforms(waveform)
+        
+        # Convert to spectrogram
+        spec = self.spec_transforms(waveform)
+
+        # Apply augmentation
+        spec = self.aug_transforms(spec)
+
+        # Normalize
+        if self.global_mean:
+            spec = (spec - self.global_mean) / self.global_std
+        
         # identifying the label of the sample from its name
         temp = file_name.split('.')[0]
         class_id = int(temp.split('-')[-1])
 
-        if wave.ndim == 1:
-            wave = wave[:, np.newaxis]
-
-        # normalizing waves to [-1, 1]
-        if np.abs(wave.max()) > 1.0:
-            wave = transforms.scale(wave, wave.min(), wave.max(), -1.0, 1.0)
-        wave = wave.T * 32768.0
-
-        # Remove silent sections
-        start = wave.nonzero()[1].min()
-        end = wave.nonzero()[1].max()
-        wave = wave[:, start: end + 1]
-
-        wave_copy = np.copy(wave)
-        wave_copy = self.wave_transforms(wave_copy)
-        wave_copy.squeeze_(0)
-
-        if self.n_mfcc:
-            mfcc = librosa.feature.mfcc(y=wave_copy.numpy(),
-                                        sr=config.sr,
-                                        n_mels=config.n_mels,
-                                        n_fft=1024,
-                                        hop_length=config.hop_length,
-                                        n_mfcc=self.n_mfcc)
-            feat = mfcc
-        else:
-            s = librosa.feature.melspectrogram(y=wave_copy.numpy(),
-                                               sr=config.sr,
-                                               n_mels=config.n_mels,
-                                               n_fft=1024,
-                                               hop_length=config.hop_length,
-                                               #center=False,
-                                               )
-            log_s = librosa.power_to_db(s, ref=np.max)
-
-            # masking the spectrograms
-            log_s = self.spec_transforms(log_s)
-
-            feat = log_s
-
-        # normalize
-        if self.global_mean:
-            feat = (feat - self.global_mean) / self.global_std
-
-        return file_name, feat, class_id
+        return file_name, spec, class_id
 
 
 def get_global_stats(data_path):
