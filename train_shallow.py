@@ -135,21 +135,20 @@ def make_model(n_mels, n_steps):
 
 
 if __name__ == "__main__":
-    # prevent mac from sleeping during training
-    if sys.platform == "darwin":  # macos
-        caffeinate_process = subprocess.Popen(['caffeinate', '-d'])
-        print("preventing mac from sleeping during training...")
+    print("starting kaggle training with shallow cnn")
     
     data_path = config.esc50_path
     
-    # setup device (mps for m1 mac, cuda for nvidia, cpu for others)
+    # setup device for kaggle (prefer cuda)
     if torch.cuda.is_available():
         device = torch.device(f"cuda:{config.device_id}")
+        print(f"using cuda gpu: {torch.cuda.get_device_name()}")
     elif torch.backends.mps.is_available():
         device = torch.device("mps")
+        print("using apple silicon gpu")
     else:
         device = torch.device("cpu")
-    print(f"using device: {device}")
+        print("using cpu")
 
     # configure logging and output directories
     float_fmt = ".3f"
@@ -245,10 +244,6 @@ if __name__ == "__main__":
 
     # overall accuracy
     scores_df = pd.DataFrame.from_dict(scores, orient='index', columns=['accuracy'])
+    print("final kaggle results for shallow cnn:")
     print(scores_df)
-    print(f"overall accuracy: {scores_df['accuracy'].mean():{float_fmt}}")
-
-    # Terminate the caffeinate process when the script is done
-    if 'caffeinate_process' in locals() and caffeinate_process.poll() is None:
-        caffeinate_process.terminate()
-        print("\nscript finished, allowing mac to sleep again.") 
+    print(f"overall accuracy: {scores_df['accuracy'].mean():{float_fmt}}") 
