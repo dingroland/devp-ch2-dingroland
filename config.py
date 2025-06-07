@@ -9,7 +9,7 @@ disable_bat_pbar = False
 # do not change this block
 n_classes = 50
 folds = 5
-test_folds = [1, 2, 3, 4, 5]
+test_folds = [1, 2, 3, 4, 5]  # Train all folds for better performance
 # use only first fold for internal testing
 #test_folds = [1]
 
@@ -24,13 +24,13 @@ n_fft = 1024 # was hardcoded in dataset
 freq_mask_param = 80
 time_mask_param = 80
 
-model_name = 'SimpleCNN'  # 'AudioMLP', 'SimpleCNN', or 'ResNet'
+model_name = 'ResNet'  # 'AudioMLP', 'SimpleCNN', or 'ResNet'
 
 # ###TRAINING
 # ratio to split off from training data
 val_size = .2  # could be changed
 device_id = 0
-batch_size = 32
+batch_size = 16  # Reduced from 32 for better convergence
 # in Colab to avoid Warning
 num_workers = 2
 num_workers = 0
@@ -38,19 +38,19 @@ num_workers = 0
 # num_workers = 6#16
 persistent_workers = True
 persistent_workers = False
-epochs = 200
+epochs = 30
 #epochs = 1
 # early stopping after epochs with no improvement
 patience = 20
 lr = 1e-3
-weight_decay = 1e-3
+weight_decay = 2e-3  # Increased for better regularization
 warm_epochs = 10
 gamma = 0.8
 step_size = 5
 
 # ### TESTING
 # model checkpoints loaded for testing
-test_checkpoints = ['terminal.pt']  # ['terminal.pt', 'best_val_loss.pt']
+test_checkpoints = ['best_val_loss.pt']  # Changed from ['terminal.pt']
 # experiment folder used for testing (result from cross validation training)
 #test_experiment = 'results/2025-04-07-00-00'
 test_experiment = 'results/sample-run'

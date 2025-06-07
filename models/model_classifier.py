@@ -31,16 +31,16 @@ class SimpleCNN(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
         self.pool = nn.MaxPool2d(2, 2)
 
-        # Correctly calculate the flattened size
-        conv_output_height = n_mels // 2 // 2
-        conv_output_width = (n_steps // 2 // 2) 
-        self.fc1 = nn.Linear(64 * conv_output_height * conv_output_width, 128)
+        # Use global average pooling (1x1) which works on MPS
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc1 = nn.Linear(64, 128)
         self.fc2 = nn.Linear(128, n_classes)
         self.dropout = nn.Dropout(0.3)
 
     def forward(self, x):
         x = self.pool(F.relu(self.bn1(self.conv1(x))))
         x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        x = self.global_pool(x)
         x = nn.Flatten()(x)
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
@@ -52,6 +52,7 @@ class ResNetForAudio(nn.Module):
     def __init__(self, n_classes):
         super().__init__()
         self.resnet = models.resnet18(weights=None)
+        #self.resnet = models.resnet12(weights=None)
         # Modify the first convolutional layer to accept 1-channel (grayscale) input
         self.resnet.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         # Modify the final fully connected layer for the number of classes

@@ -13,15 +13,8 @@ from functools import partial
 from models.model_classifier import AudioMLP, SimpleCNN, ResNetForAudio
 from models.utils import EarlyStopping, Tee
 from dataset.dataset_ESC50 import ESC50, get_global_stats
-import config
+import config_kaggle as config  # Use Kaggle config
 
-
-# mean and std of train data for every fold
-# global_stats = np.array([[-54.364834, 20.853344],
-#                          [-54.279022, 20.847532],
-#                          [-54.18343, 20.80387],
-#                          [-54.223698, 20.798292],
-#                          [-54.200905, 20.949806]])
 
 # evaluate model on different testing data 'dataloader'
 def test(model, dataloader, criterion, device):
@@ -148,21 +141,20 @@ def make_model(n_mels, n_steps):
 
 
 if __name__ == "__main__":
-    # Prevent Mac from sleeping during training
-    if sys.platform == "darwin":  # macOS
-        caffeinate_process = subprocess.Popen(['caffeinate', '-d'])
-        print("🔋 Preventing Mac from sleeping during training...")
+    print("🚀 KAGGLE TRAINING - Optimized for Cloud GPUs!")
     
     data_path = config.esc50_path
     
-    # Updated device selection for MPS (M1 Mac)
+    # Enhanced device selection for Kaggle
     if torch.cuda.is_available():
-        device = torch.device(f"cuda:{config.device_id}")
+        device = torch.device("cuda:0")
+        print(f"🎯 Using CUDA GPU: {torch.cuda.get_device_name()}")
     elif torch.backends.mps.is_available():
         device = torch.device("mps")
+        print("🍎 Using Apple Silicon GPU")
     else:
         device = torch.device("cpu")
-    print(f"Using device: {device}")
+        print("⚠️ Using CPU")
 
     # digits for logging
     float_fmt = ".3f"
@@ -177,8 +169,7 @@ if __name__ == "__main__":
     print("Calculating global mean and std for normalization...")
     global_stats = get_global_stats(data_path)
     print("Done.")
-    # for spectrograms
-    # print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
+    
     for test_fold in config.test_folds:
         experiment = os.path.join(experiment_root, f'{test_fold}')
         if not os.path.exists(experiment):
@@ -194,7 +185,7 @@ if __name__ == "__main__":
             train_set = get_fold_dataset(subset="train")
             print('*****')
             print(f'train folds are {train_set.train_folds} and test fold is {train_set.test_folds}')
-            print('random wave cropping')
+            print('Enhanced data augmentation for Kaggle')
 
             train_loader = torch.utils.data.DataLoader(train_set,
                                                        batch_size=config.batch_size,
@@ -221,19 +212,18 @@ if __name__ == "__main__":
             n_mels, n_steps = temp_spec.shape[1], temp_spec.shape[2]
             
             model = make_model(n_mels=n_mels, n_steps=n_steps)
-            # model = nn.DataParallel(model, device_ids=config.device_ids)
             model = model.to(device)
             print('*****')
 
             # Define a loss function and optimizer
             criterion = nn.CrossEntropyLoss().to(device)
             
-            # Switched to AdamW optimizer
+            # Optimized for Kaggle GPUs
             optimizer = torch.optim.AdamW(model.parameters(),
                                          lr=config.lr,
                                          weight_decay=config.weight_decay)
 
-            # Use Cosine Annealing instead of StepLR for better convergence
+            # Use Cosine Annealing for optimal convergence
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                                   T_max=config.epochs,
                                                                   eta_min=1e-6)
@@ -254,7 +244,9 @@ if __name__ == "__main__":
             test_acc, test_loss, _ = test(model, test_loader, criterion=criterion, device=device)
             scores[test_fold] = pd.Series(dict(TestAcc=test_acc, TestLoss=np.mean(test_loss)))
             print(scores[test_fold])
-            # print(scores[test_fold].unstack())
             print()
+            
     scores = pd.concat(scores).unstack([-1])
+    print("🎯 FINAL KAGGLE RESULTS:")
     print(pd.concat((scores, scores.agg(['mean', 'std']))))
+    print(f"🚀 Average Test Accuracy: {scores['TestAcc'].mean():.1%}") 
