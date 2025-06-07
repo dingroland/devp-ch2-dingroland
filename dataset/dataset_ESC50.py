@@ -177,7 +177,7 @@ def get_global_stats(data_path):
     """
     res = []
     for i in range(1, 6):
-        train_set = ESC50(subset="train", test_folds={i}, root=data_path, download=True)
+        train_set = ESC50(subset="train", test_folds={i}, root=data_path, download=False)
         # concatenate all spectrograms to compute stats
         a = torch.concatenate([v[1] for v in tqdm(train_set)])
         res.append((a.mean(), a.std()))
