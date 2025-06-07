@@ -1,7 +1,30 @@
-outputs
-results
-02devp-challenge2.pdf
+# Ignore virtual environments
 .venv/
+venv/
+ENV/
+env/
+
+# Ignore macOS system files
 .DS_Store
+
+# Ignore Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Ignore outputs and results
+#outputs/
+results/
+
+# Ignore large documents or local docs not part of code
+02devp-challenge2.pdf
+
+# Optional: ignore log files if you generate any
+*.log
+
+# Optional: ignore Jupyter notebooks checkpoints (if using any .ipynb files)
+.ipynb_checkpoints/
+
+data/escc50/
+data/
