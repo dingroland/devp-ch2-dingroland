@@ -1,6 +1,6 @@
 # Kaggle-optimized configuration for maximum performance
 # dir with ESC50 data
-esc50_path = '/kaggle/input/esc50/esc50'  # Kaggle dataset path
+esc50_path = '/kaggle/working/esc50'  # Kaggle working dir is writeable
 
 runs_path = 'results'
 # sub-epoch (batch-level) progress bar display
