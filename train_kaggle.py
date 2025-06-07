@@ -16,7 +16,7 @@ from dataset.dataset_ESC50 import ESC50, get_global_stats
 import config_kaggle as config  # Use Kaggle config
 
 
-# evaluate model on different testing data 'dataloader'
+# evaluate the model on a given dataloader
 def test(model, dataloader, criterion, device):
     model.eval()
 
@@ -25,20 +25,19 @@ def test(model, dataloader, criterion, device):
     samples_count = 0
     probs = {}
     with torch.no_grad():
-        # no gradient computation needed
+        # no gradient computation needed for evaluation
         for k, x, label in tqdm(dataloader, unit='bat', disable=config.disable_bat_pbar, position=0):
             x = x.float().to(device)
             y_true = label.to(device)
 
-            # the forward pass through the model
             y_prob = model(x)
-
             loss = criterion(y_prob, y_true)
             losses.append(loss.item())
 
             y_pred = torch.argmax(y_prob, dim=1)
             corrects += (y_pred == y_true).sum().item()
             samples_count += y_true.shape[0]
+            # store predictions for later analysis
             for w, p in zip(k, y_prob):
                 probs[w] = [float(v) for v in p]
 
@@ -47,7 +46,7 @@ def test(model, dataloader, criterion, device):
 
 
 def train_epoch():
-    # switch to training
+    # switch to training mode
     model.train()
 
     losses = []
@@ -57,18 +56,13 @@ def train_epoch():
         x = x.float().to(device)
         y_true = label.to(device)
 
-        # the forward pass through the model
         y_prob = model(x)
 
-        # we could also use 'F.one_hot(y_true)' for 'y_true', but this would be slower
         loss = criterion(y_prob, y_true)
-        # reset the gradients to zero - avoids accumulation
-        optimizer.zero_grad()
-        # compute the gradient with backpropagation
-        loss.backward()
+        optimizer.zero_grad() # reset gradients
+        loss.backward() # compute gradients
         losses.append(loss.item())
-        # minimize the loss via the gradient - adapts the model parameters
-        optimizer.step()
+        optimizer.step() # update model weights
 
         y_pred = torch.argmax(y_prob, dim=1)
         corrects += (y_pred == y_true).sum().item()
@@ -81,24 +75,19 @@ def train_epoch():
 def fit_classifier():
     num_epochs = config.epochs
 
+    # setup early stopping to prevent overfitting
     loss_stopping = EarlyStopping(patience=config.patience, delta=0.002, verbose=True, float_fmt=float_fmt,
                                   checkpoint_file=os.path.join(experiment, 'best_val_loss.pt'))
 
     pbar = tqdm(range(1, 1 + num_epochs), ncols=50, unit='ep', file=sys.stdout, ascii=True)
     for epoch in (range(1, 1 + num_epochs)):
-        # iterate once over training data
         train_acc, train_loss = train_epoch()
-
-        # validate model
         val_acc, val_loss, _ = test(model, val_loader, criterion=criterion, device=device)
         val_loss_avg = np.mean(val_loss)
 
-        # print('\n')
         pbar.update()
-        # pbar.refresh() syncs output when pbar on stderr
-        # pbar.refresh()
         print(end=' ')
-        print(  # f" Epoch: {epoch}/{num_epochs}",
+        print(
             f"TrnAcc={train_acc:{float_fmt}}",
             f"ValAcc={val_acc:{float_fmt}}",
             f"TrnLoss={np.mean(train_loss):{float_fmt}}",
@@ -109,12 +98,12 @@ def fit_classifier():
         if not improved:
             print()
         if early_stop:
-            print("Early stopping")
+            print("early stopping")
             break
 
-        # advance the optimization scheduler
-        scheduler.step()
-    # save full model
+        scheduler.step() # advance the learning rate scheduler
+
+    # save the final model state
     torch.save(model.state_dict(), os.path.join(experiment, 'terminal.pt'))
 
 
@@ -141,52 +130,53 @@ def make_model(n_mels, n_steps):
 
 
 if __name__ == "__main__":
-    print("🚀 KAGGLE TRAINING - Optimized for Cloud GPUs!")
+    print("starting kaggle training")
     
     data_path = config.esc50_path
     
-    # Enhanced device selection for Kaggle
+    # setup device for kaggle (prefer cuda)
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
-        print(f"🎯 Using CUDA GPU: {torch.cuda.get_device_name()}")
+        print(f"using cuda gpu: {torch.cuda.get_device_name()}")
     elif torch.backends.mps.is_available():
         device = torch.device("mps")
-        print("🍎 Using Apple Silicon GPU")
+        print("using apple silicon gpu")
     else:
         device = torch.device("cpu")
-        print("⚠️ Using CPU")
+        print("using cpu")
 
-    # digits for logging
+    # configure logging and output directories
     float_fmt = ".3f"
     pd.options.display.float_format = ('{:,' + float_fmt + '}').format
     runs_path = config.runs_path
     experiment_root = os.path.join(runs_path, str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')))
     os.makedirs(experiment_root, exist_ok=True)
 
-    # for all folds
+    # loop over all folds for cross-validation
     scores = {}
-    # expensive!
-    print("Calculating global mean and std for normalization...")
+    # calculate global mean and std for normalization across the entire dataset
+    print("calculating global mean and std for normalization...")
     global_stats = get_global_stats(data_path)
-    print("Done.")
+    print("done.")
     
     for test_fold in config.test_folds:
         experiment = os.path.join(experiment_root, f'{test_fold}')
         if not os.path.exists(experiment):
             os.mkdir(experiment)
 
-        # clone stdout to file (does not include stderr). If used may confuse linux 'tee' command.
+        # redirect stdout to a log file to keep track of training progress
         with Tee(os.path.join(experiment, 'train.log'), 'w', 1, encoding='utf-8',
                  newline='\n', proc_cr=True):
-            # this function assures consistent 'test_folds' setting for train, val, test splits
+            # create a partial function for the dataset to ensure consistent settings
             get_fold_dataset = partial(ESC50, root=data_path, download=True,
                                        test_folds={test_fold}, global_mean_std=global_stats[test_fold - 1])
 
             train_set = get_fold_dataset(subset="train")
             print('*****')
             print(f'train folds are {train_set.train_folds} and test fold is {train_set.test_folds}')
-            print('Enhanced data augmentation for Kaggle')
+            print('enhanced data augmentation for kaggle')
 
+            # setup dataloader for training
             train_loader = torch.utils.data.DataLoader(train_set,
                                                        batch_size=config.batch_size,
                                                        shuffle=True,
@@ -196,6 +186,7 @@ if __name__ == "__main__":
                                                        pin_memory=True,
                                                        )
 
+            # setup dataloader for validation
             val_loader = torch.utils.data.DataLoader(get_fold_dataset(subset="val"),
                                                      batch_size=config.batch_size,
                                                      shuffle=False,
@@ -206,7 +197,7 @@ if __name__ == "__main__":
 
             print()
             # instantiate model
-            # Get spectrogram dimensions from the dataset
+            # get spectrogram dimensions from a sample to initialize the model correctly
             temp_dataset = get_fold_dataset(subset="train")
             _, temp_spec, _ = temp_dataset[0]
             n_mels, n_steps = temp_spec.shape[1], temp_spec.shape[2]
@@ -215,38 +206,41 @@ if __name__ == "__main__":
             model = model.to(device)
             print('*****')
 
-            # Define a loss function and optimizer
+            # define loss function and optimizer
             criterion = nn.CrossEntropyLoss().to(device)
             
-            # Optimized for Kaggle GPUs
+            # optimizer settings for kaggle
             optimizer = torch.optim.AdamW(model.parameters(),
                                          lr=config.lr,
                                          weight_decay=config.weight_decay)
 
-            # Use Cosine Annealing for optimal convergence
+            # use cosine annealing scheduler for learning rate adjustment
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                                   T_max=config.epochs,
                                                                   eta_min=1e-6)
 
-            # fit the model using only training and validation data, no testing data allowed here
+            # train the model
             print()
             fit_classifier()
 
-            # tests
+            # setup dataloader for testing
             test_loader = torch.utils.data.DataLoader(get_fold_dataset(subset="test"),
                                                       batch_size=config.batch_size,
                                                       shuffle=False,
-                                                      num_workers=0,  # config.num_workers,
+                                                      num_workers=0,
                                                       drop_last=False,
                                                       )
-
-            print(f'\ntest {experiment}')
-            test_acc, test_loss, _ = test(model, test_loader, criterion=criterion, device=device)
-            scores[test_fold] = pd.Series(dict(TestAcc=test_acc, TestLoss=np.mean(test_loss)))
-            print(scores[test_fold])
-            print()
             
-    scores = pd.concat(scores).unstack([-1])
-    print("🎯 FINAL KAGGLE RESULTS:")
-    print(pd.concat((scores, scores.agg(['mean', 'std']))))
-    print(f"🚀 Average Test Accuracy: {scores['TestAcc'].mean():.1%}") 
+            # test with the best model saved during training
+            model.load_state_dict(torch.load(os.path.join(experiment, 'best_val_loss.pt'), map_location=device))
+            acc, _, _ = test(model, test_loader, criterion=criterion, device=device)
+            scores[test_fold] = acc
+            print(f'fold {test_fold} test accuracy: {acc:{float_fmt}}')
+            print()
+            print()
+
+    # calculate and print overall accuracy
+    scores_df = pd.DataFrame.from_dict(scores, orient='index', columns=['accuracy'])
+    print("final kaggle results:")
+    print(scores_df)
+    print(f"overall accuracy: {scores_df['accuracy'].mean():{float_fmt}}") 

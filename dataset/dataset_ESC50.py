@@ -19,6 +19,7 @@ from . import transforms
 
 
 def download_file(url: str, fname: str, chunk_size=1024):
+    """helper function to download a file with a progress bar."""
     resp = requests.get(url, stream=True)
     total = int(resp.headers.get('content-length', 0))
     with open(fname, 'wb') as file, tqdm(
@@ -34,25 +35,26 @@ def download_file(url: str, fname: str, chunk_size=1024):
 
 
 def download_extract_zip(url: str, file_path: str):
-    #import wget
+    """downloads and extracts a zip file."""
     import zipfile
     root = os.path.dirname(file_path)
-    # wget.download(url, out=file_path, bar=download_progress)
     download_file(url=url, fname=file_path)
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(root)
 
 
-# create this bar_progress method which is invoked automatically from wget
 def download_progress(current, total, width=80):
-    progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
-    # Don't use print() as it will print in new line every time.
+    """a simple progress bar for downloads."""
+    progress_message = "downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
     sys.stdout.write("\r" + progress_message)
     sys.stdout.flush()
 
 
 class ESC50(data.Dataset):
-
+    """
+    a pytorch dataset for the esc-50 dataset.
+    handles data loading, splitting, transformations, and augmentation.
+    """
     def __init__(self, root, test_folds=frozenset((1,)), subset="train", global_mean_std=(0.0, 1.0), download=False):
         audio = 'ESC-50-master/audio'
         root = os.path.normpath(root)
@@ -61,7 +63,8 @@ class ESC50(data.Dataset):
             self.subset = subset
         else:
             raise ValueError
-        # path = path.split(os.sep)
+        
+        # download and extract the dataset if it doesn't exist
         if not os.path.exists(audio) and download:
             os.makedirs(root, exist_ok=True)
             file_name = 'master.zip'
@@ -70,30 +73,34 @@ class ESC50(data.Dataset):
             download_extract_zip(url, file_path)
 
         self.root = audio
-        # getting name of all files inside the all the train_folds
+        
+        # split files into train and test sets based on folds
         temp = sorted(os.listdir(self.root))
         folds = {int(v.split('-')[0]) for v in temp}
         self.test_folds = set(test_folds)
-        self.train_folds = folds - test_folds
+        self.train_folds = folds - self.test_folds
         train_files = [f for f in temp if int(f.split('-')[0]) in self.train_folds]
-        test_files = [f for f in temp if int(f.split('-')[0]) in test_folds]
-        # sanity check
-        assert set(temp) == (set(train_files) | set(test_files))
+        test_files = [f for f in temp if int(f.split('-')[0]) in self.test_folds]
+        
+        assert set(temp) == (set(train_files) | set(test_files)) # sanity check
+        
         if subset == "test":
             self.file_names = test_files
         else:
+            # further split training data into train and validation sets
             if config.val_size:
                 train_files, val_files = train_test_split(train_files, test_size=config.val_size, random_state=0)
             if subset == "train":
                 self.file_names = train_files
             else:
                 self.file_names = val_files
-        # the number of samples in the wave (=length) required for spectrogram
+        
+        # calculate the required length for spectrograms
         out_len = int(((config.sr * 5) // config.hop_length) * config.hop_length)
         self.n_steps = (out_len // config.hop_length) + 1
         train = self.subset == "train"
 
-        # Waveform transformations
+        # setup waveform transformations (padding and cropping)
         self.wave_transforms = None
         if train:
             self.wave_transforms = transforms.Compose(
@@ -106,12 +113,13 @@ class ESC50(data.Dataset):
                 transforms.RandomCrop(out_len=out_len, train=False)
             )
         
-        # Spectrogram transformations
+        # setup spectrogram transformations (mel spectrogram and db conversion)
         self.spec_transforms = torch.nn.Sequential(
             T.MelSpectrogram(sample_rate=config.sr, n_fft=config.n_fft, n_mels=config.n_mels, hop_length=config.hop_length),
             T.AmplitudeToDB(stype='power', top_db=80)
         )
 
+        # setup augmentation transformations for training
         self.aug_transforms = torch.nn.Sequential()
         if train:
             self.aug_transforms.append(T.FrequencyMasking(freq_mask_param=config.freq_mask_param))
@@ -128,34 +136,34 @@ class ESC50(data.Dataset):
         file_name = self.file_names[index]
         path = os.path.join(self.root, file_name)
         
-        # Use torchaudio to load audio
+        # load audio file using torchaudio
         try:
             waveform, sample_rate = torchaudio.load(path, normalize=True)
         except Exception as e:
-            print(f"Error loading file {path}: {e}")
-            # Return a dummy sample
+            print(f"error loading file {path}: {e}")
+            # return a dummy sample on error
             return file_name, torch.zeros((1, config.n_mels, self.n_steps)), 0
 
-        # Resample if necessary
+        # resample if the sample rate is different from the target
         if sample_rate != config.sr:
             resampler = T.Resample(orig_freq=sample_rate, new_freq=config.sr)
             waveform = resampler(waveform)
 
-        # Apply wave transforms
+        # apply waveform transformations
         if self.wave_transforms:
              waveform = self.wave_transforms(waveform)
         
-        # Convert to spectrogram
+        # convert waveform to a spectrogram
         spec = self.spec_transforms(waveform)
 
-        # Apply augmentation
+        # apply augmentation during training
         spec = self.aug_transforms(spec)
 
-        # Normalize
+        # normalize the spectrogram using global stats
         if self.global_mean:
             spec = (spec - self.global_mean) / self.global_std
         
-        # identifying the label of the sample from its name
+        # extract the class label from the file name
         temp = file_name.split('.')[0]
         class_id = int(temp.split('-')[-1])
 
@@ -163,9 +171,14 @@ class ESC50(data.Dataset):
 
 
 def get_global_stats(data_path):
+    """
+    calculates the global mean and standard deviation for each fold of the dataset.
+    this is used for normalization.
+    """
     res = []
     for i in range(1, 6):
         train_set = ESC50(subset="train", test_folds={i}, root=data_path, download=True)
+        # concatenate all spectrograms to compute stats
         a = torch.concatenate([v[1] for v in tqdm(train_set)])
         res.append((a.mean(), a.std()))
     return np.array(res)

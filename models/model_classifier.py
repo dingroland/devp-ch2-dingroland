@@ -5,6 +5,7 @@ import torchvision.models as models
 
 
 class AudioMLP(nn.Module):
+    """a simple multi-layer perceptron for audio classification."""
     def __init__(self, n_mels, n_steps, hidden1_size, hidden2_size, output_size, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fc1 = nn.Linear(n_steps * n_mels, hidden1_size)
@@ -13,7 +14,7 @@ class AudioMLP(nn.Module):
         self.dropout = nn.Dropout(0.3)
 
     def forward(self, x):
-        # 2D to 1D
+        # flatten the input spectrogram
         x = nn.Flatten()(x)
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
@@ -23,6 +24,7 @@ class AudioMLP(nn.Module):
 
 
 class SimpleCNN(nn.Module):
+    """a simple cnn for audio classification."""
     def __init__(self, n_classes, n_mels=128, n_steps=431):
         super().__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
@@ -31,7 +33,7 @@ class SimpleCNN(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
         self.pool = nn.MaxPool2d(2, 2)
 
-        # Use global average pooling (1x1) which works on MPS
+        # use global average pooling for mps compatibility
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(64, 128)
         self.fc2 = nn.Linear(128, n_classes)
@@ -49,13 +51,13 @@ class SimpleCNN(nn.Module):
 
 
 class ResNetForAudio(nn.Module):
+    """a resnet model adapted for audio classification."""
     def __init__(self, n_classes):
         super().__init__()
         self.resnet = models.resnet18(weights=None)
-        #self.resnet = models.resnet12(weights=None)
-        # Modify the first convolutional layer to accept 1-channel (grayscale) input
+        # modify the first convolutional layer to accept 1-channel (grayscale) input
         self.resnet.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        # Modify the final fully connected layer for the number of classes
+        # modify the final fully connected layer for the number of classes
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, n_classes)
 

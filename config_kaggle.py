@@ -1,46 +1,45 @@
-# Kaggle-optimized configuration for maximum performance
-# dir with ESC50 data
-esc50_path = '/kaggle/working/esc50'  # Kaggle working dir is writeable
+# configuration for kaggle environment
+# this file is optimized for performance on kaggle gpus.
 
-runs_path = 'results'
-# sub-epoch (batch-level) progress bar display
-disable_bat_pbar = False
+# data settings
+esc50_path = '/kaggle/input/esc-50-environmental-sound-classification'
+runs_path = '/kaggle/working/results'
+disable_bat_pbar = False # disable batch-level progress bar display
 
-# do not change this block
+# cross-validation settings
 n_classes = 50
 folds = 5
-test_folds = [1, 2, 3, 4, 5]  # Train ALL folds for maximum performance
+test_folds = [1, 2, 3, 4, 5] # use all folds for full cross-validation
 
-# sampling rate for waves
-sr = 44100
-n_mels = 128
-hop_length = 512
-n_fft = 1024
+# audio processing settings
+sr = 44100      # sampling rate
+n_mels = 128    # number of mel bins
+hop_length = 512 # hop length for stft
+n_fft = 1024     # fft window size
 
-# Aggressive spectrogram augmentation for Kaggle
-freq_mask_param = 100  # Increased from 80
-time_mask_param = 100  # Increased from 80
+# spectrogram augmentation settings
+freq_mask_param = 100
+time_mask_param = 100
 
-model_name = 'ResNet'  # Use ResNet for best performance
+# model settings
+model_name = 'ResNet'  # 'AudioMLP', 'SimpleCNN', or 'ResNet'
 
-# ###TRAINING
-# ratio to split off from training data
-val_size = .2
+# training settings
+val_size = 0.2         # validation set size
 device_id = 0
-batch_size = 32  # Larger batch size for cloud GPUs
-num_workers = 4  # More workers for faster data loading
+batch_size = 32        # larger batch size for cloud gpus
+num_workers = 4        # more workers for faster data loading
 persistent_workers = True
-epochs = 30  # More epochs for better convergence
-# early stopping after epochs with no improvement
-patience = 15  # Less patience for faster convergence
+epochs = 30          # more epochs for better convergence
+patience = 15          # early stopping patience
 lr = 1e-3
-weight_decay = 3e-3  # Higher regularization
+weight_decay = 2e-3
+
+# scheduler settings (not all used by all schedulers)
 warm_epochs = 10
 gamma = 0.8
 step_size = 5
 
-# ### TESTING
-# model checkpoints loaded for testing
-test_checkpoints = ['best_val_loss.pt']
-# experiment folder will be auto-generated
-test_experiment = 'results/kaggle-run' 
+# testing settings
+test_checkpoints = ['best_val_loss.pt'] # model to use for testing
+test_experiment = '/kaggle/working/results/kaggle-run'   # experiment folder for testing 

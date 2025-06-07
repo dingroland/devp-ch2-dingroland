@@ -1,56 +1,43 @@
-# dir with ESC50 data
+# data settings
 esc50_path = 'data/esc50'
-
 runs_path = 'results'
-# sub-epoch (batch-level) progress bar display
-disable_bat_pbar = False
-#disable_bat_pbar = True
+disable_bat_pbar = False # disable batch-level progress bar display
 
-# do not change this block
+# cross-validation settings
 n_classes = 50
 folds = 5
-test_folds = [1, 2, 3, 4, 5]  # Train all folds for better performance
-# use only first fold for internal testing
-#test_folds = [1]
+#test_folds = [1] # use only one fold for local testing
+test_folds = [1, 2, 3, 4, 5] # use all folds for full cross-validation
 
-# sampling rate for waves
-sr = 44100
-n_mels = 128
-hop_length = 512
-#n_mfcc = 42
-n_fft = 1024 # was hardcoded in dataset
+# audio processing settings
+sr = 44100      # sampling rate
+n_mels = 128    # number of mel bins
+hop_length = 512 # hop length for stft
+n_fft = 1024     # fft window size
 
-# Spectrogram augmentation
+# spectrogram augmentation settings
 freq_mask_param = 80
 time_mask_param = 80
 
+# model settings
 model_name = 'ResNet'  # 'AudioMLP', 'SimpleCNN', or 'ResNet'
 
-# ###TRAINING
-# ratio to split off from training data
-val_size = .2  # could be changed
+# training settings
+val_size = 0.2         # validation set size
 device_id = 0
-batch_size = 16  # Reduced from 32 for better convergence
-# in Colab to avoid Warning
-num_workers = 2
-num_workers = 0
-# for local Windows or Linux machine
-# num_workers = 6#16
-persistent_workers = True
+batch_size = 16
+num_workers = 0        # set to 0 for local execution, especially on windows
 persistent_workers = False
-epochs = 30
-#epochs = 1
-# early stopping after epochs with no improvement
-patience = 20
+epochs = 50
+patience = 15          # early stopping patience
 lr = 1e-3
-weight_decay = 2e-3  # Increased for better regularization
+weight_decay = 2e-3
+
+# scheduler settings 
 warm_epochs = 10
 gamma = 0.8
 step_size = 5
 
-# ### TESTING
-# model checkpoints loaded for testing
-test_checkpoints = ['best_val_loss.pt']  # Changed from ['terminal.pt']
-# experiment folder used for testing (result from cross validation training)
-#test_experiment = 'results/2025-04-07-00-00'
-test_experiment = 'results/sample-run'
+# testing settings
+test_checkpoints = ['best_val_loss.pt'] # model to use for testing
+test_experiment = 'results/sample-run'   # experiment folder for testing
