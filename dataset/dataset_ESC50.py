@@ -56,7 +56,7 @@ class ESC50(data.Dataset):
     handles data loading, splitting, transformations, and augmentation.
     """
     def __init__(self, root, test_folds=frozenset((1,)), subset="train", global_mean_std=(0.0, 1.0), download=False):
-        audio = 'ESC-50-master/audio'
+        audio = 'audio'
         root = os.path.normpath(root)
         audio = os.path.join(root, audio)
         if subset in {"train", "test", "val"}:
