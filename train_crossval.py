@@ -143,7 +143,7 @@ if __name__ == "__main__":
     # prevent mac from sleeping during training
     if sys.platform == "darwin":  # macos
         caffeinate_process = subprocess.Popen(['caffeinate', '-d'])
-        print("🔋 preventing mac from sleeping during training...")
+        print("preventing mac from sleeping during training...")
     
     data_path = config.esc50_path
     
@@ -257,4 +257,4 @@ if __name__ == "__main__":
     # Terminate the caffeinate process when the script is done
     if 'caffeinate_process' in locals() and caffeinate_process.poll() is None:
         caffeinate_process.terminate()
-        print("\n✅ script finished, allowing mac to sleep again.")
+        print("\nscript finished, allowing mac to sleep again.")
