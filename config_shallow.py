@@ -2,7 +2,8 @@
 # this file is optimized for performance on kaggle gpus.
 
 # data settings
-esc50_path = '/kaggle/input/esc-50-environmental-sound-classification'
+esc50_path = '/kaggle/input/esc-data'
+
 runs_path = '/kaggle/working/results'
 disable_bat_pbar = False # disable batch-level progress bar display
 
