@@ -55,7 +55,7 @@ class ESC50(data.Dataset):
     a pytorch dataset for the esc-50 dataset.
     handles data loading, splitting, transformations, and augmentation.
     """
-    def __init__(self, root, test_folds=frozenset((1,)), subset="train", global_mean_std=(0.0, 1.0), download=False):
+    def __init__(self, root, test_folds=frozenset((1,)), subset="train", global_mean_std=(0.0, 1.0), download=True):
         audio = 'audio'
         root = os.path.normpath(root)
         audio = os.path.join(root, audio)

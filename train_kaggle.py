@@ -11,7 +11,7 @@ import sys
 from functools import partial
 
 from models.model_classifier import AudioMLP, SimpleCNN, ResNetForAudio
-from models.utils import EarlyStopping, Tee
+from models.utils import EarlyStopping, Tee, print_config
 from dataset.dataset_ESC50 import ESC50, get_global_stats
 import config_kaggle as config  # Use Kaggle config
 
@@ -130,6 +130,7 @@ def make_model(n_mels, n_steps):
 
 
 if __name__ == "__main__":
+    print_config(config)
     print("starting kaggle training")
     
     data_path = config.esc50_path

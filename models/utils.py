@@ -99,3 +99,11 @@ class EarlyStopping:
 
     def save_checkpoint(self, score, model, epoch):
         torch.save(model.state_dict(), self.checkpoint_file)
+
+def print_config(config_module):
+    """prints the configuration settings."""
+    print("configuration settings:")
+    for key in dir(config_module):
+        if not key.startswith('_'):
+            print(f"  {key}: {getattr(config_module, key)}")
+    print("-" * 30)

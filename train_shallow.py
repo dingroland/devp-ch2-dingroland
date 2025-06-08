@@ -12,7 +12,7 @@ from functools import partial
 import subprocess
 
 from models.model_classifier import AudioMLP, SimpleCNN, ResNetForAudio, ShallowCNN
-from models.utils import EarlyStopping, Tee
+from models.utils import EarlyStopping, Tee, print_config
 from dataset.dataset_ESC50 import ESC50, get_global_stats
 import config_shallow as config
 
@@ -135,6 +135,7 @@ def make_model(n_mels, n_steps):
 
 
 if __name__ == "__main__":
+    print_config(config)
     print("starting kaggle training with shallow cnn")
     
     data_path = config.esc50_path
