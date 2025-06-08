@@ -174,7 +174,7 @@ if __name__ == "__main__":
         with Tee(os.path.join(experiment, 'train.log'), 'w', 1, encoding='utf-8',
                  newline='\n', proc_cr=True):
             # create a partial function for the dataset to ensure consistent settings
-            get_fold_dataset = partial(ESC50, root=data_path, download=True,
+            get_fold_dataset = partial(ESC50, root=data_path, download=False,
                                        test_folds={test_fold}, global_mean_std=global_stats[test_fold - 1])
 
             train_set = get_fold_dataset(subset="train")
