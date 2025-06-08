@@ -56,23 +56,36 @@ class ESC50(data.Dataset):
     handles data loading, splitting, transformations, and augmentation.
     """
     def __init__(self, root, test_folds=frozenset((1,)), subset="train", global_mean_std=(0.0, 1.0), download=True):
-        audio = 'audio'
         root = os.path.normpath(root)
-        audio = os.path.join(root, audio)
+
+        # auto-detect audio folder
+        if os.path.exists(os.path.join(root, 'audio')):
+            audio_path_component = 'audio'
+        elif os.path.exists(os.path.join(root, 'ESC-50-master/audio')):
+            audio_path_component = 'ESC-50-master/audio'
+        else:
+            # if download is enabled, we assume the structure will be ESC-50-master/audio
+            if download:
+                audio_path_component = 'ESC-50-master/audio'
+            else:
+                raise RuntimeError(f"could not find esc-50 audio folder in {root}")
+
+        audio_path = os.path.join(root, audio_path_component)
+        
         if subset in {"train", "test", "val"}:
             self.subset = subset
         else:
             raise ValueError
         
         # download and extract the dataset if it doesn't exist
-        if not os.path.exists(audio) and download:
+        if not os.path.exists(audio_path) and download:
             os.makedirs(root, exist_ok=True)
             file_name = 'master.zip'
             file_path = os.path.join(root, file_name)
             url = f'https://github.com/karoldvl/ESC-50/archive/{file_name}'
             download_extract_zip(url, file_path)
 
-        self.root = audio
+        self.root = audio_path
         
         # split files into train and test sets based on folds
         temp = sorted(os.listdir(self.root))
