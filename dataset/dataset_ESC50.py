@@ -183,7 +183,7 @@ class ESC50(data.Dataset):
         return file_name, spec, class_id
 
 
-def get_global_stats(data_path):
+def old_get_global_stats(data_path):
     """
     calculates the global mean and standard deviation for each fold of the dataset.
     this is used for normalization.
@@ -194,4 +194,31 @@ def get_global_stats(data_path):
         # concatenate all spectrograms to compute stats
         a = torch.concatenate([v[1] for v in tqdm(train_set)])
         res.append((a.mean(), a.std()))
+    return np.array(res)
+
+
+def get_global_stats(data_path):
+    """
+    Calculates the global mean and standard deviation for each fold of the dataset.
+    This is used for normalization.
+    """
+
+    # If path is read-only (Kaggle input), switch to working directory
+    if data_path.startswith("/kaggle/input/"):
+        data_path = "/kaggle/working/esc-data"
+    
+    # Check if audio data is already present
+    audio_path1 = os.path.join(data_path, "audio")
+    audio_path2 = os.path.join(data_path, "ESC-50-master/audio")
+    if os.path.exists(audio_path1) or os.path.exists(audio_path2):
+        download = False
+    else:
+        download = True
+
+    res = []
+    for i in range(1, 6):
+        train_set = ESC50(subset="train", test_folds={i}, root=data_path, download=download)
+        a = torch.concatenate([v[1] for v in tqdm(train_set)])
+        res.append((a.mean(), a.std()))
+
     return np.array(res)
