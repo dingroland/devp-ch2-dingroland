@@ -9,7 +9,6 @@ import datetime
 from tqdm import tqdm
 import sys
 from functools import partial
-import subprocess
 
 from models.model_classifier import AudioMLP, SimpleCNN, ResNetForAudio, ShallowCNN
 from models.utils import EarlyStopping, Tee, print_config
