@@ -32,8 +32,8 @@ device_id = 0
 batch_size = 32        # larger batch size for cloud gpus
 num_workers = 4        # more workers for faster data loading
 persistent_workers = True
-epochs = 30          # more epochs for better convergence
-patience = 15          # early stopping patience
+epochs = 50          # more epochs for better convergence
+patience = 20         # early stopping patience
 lr = 1e-3
 weight_decay = 2e-3
 
