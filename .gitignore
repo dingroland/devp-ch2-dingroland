@@ -28,5 +28,5 @@ result/
 # Optional: ignore Jupyter notebooks checkpoints (if using any .ipynb files)
 .ipynb_checkpoints/
 
-data/escc50/
+data/esc50/
 data/
