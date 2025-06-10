@@ -1,12 +1,27 @@
-# configuration for kaggle environment
-# this file is optimized for performance on kaggle gpus.
+#TODO:SAVE RESULTS UPLOAD AND FIX GITHUB
+
+
+
+
+
+
+
+
+
+
+
+
 
 # data settings
 esc50_path = 'data/esc50'
-runs_path = 'results'
+runs_path = '/kaggle/working/results'
 
 #runs_path = '/kaggle/working/results'
 disable_bat_pbar = False # disable batch-level progress bar display
+
+
+
+
 
 # cross-validation settings
 n_classes = 50

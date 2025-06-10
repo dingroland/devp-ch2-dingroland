@@ -15,7 +15,7 @@ __pycache__/
 
 # Ignore outputs and results
 #outputs/
-result/
+
 
 # Ignore large documents or local docs not part of code
 02devp-challenge2.pdf
