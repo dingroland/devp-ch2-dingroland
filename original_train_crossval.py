@@ -9,12 +9,20 @@ import datetime
 from tqdm import tqdm
 import sys
 from functools import partial
+import subprocess
 
 from models.model_classifier import AudioMLP, SimpleCNN, ResNetForAudio
 from models.utils import EarlyStopping, Tee, print_config
 from dataset.dataset_ESC50 import ESC50, get_global_stats
-import config_kaggle as config  # Use Kaggle config
+import config
 
+
+# mean and std of train data for every fold
+# global_stats = np.array([[-54.364834, 20.853344],
+#                          [-54.279022, 20.847532],
+#                          [-54.18343, 20.80387],
+#                          [-54.223698, 20.798292],
+#                          [-54.200905, 20.949806]])
 
 # evaluate the model on a given dataloader
 def test(model, dataloader, criterion, device):
@@ -46,7 +54,7 @@ def test(model, dataloader, criterion, device):
 
 
 def train_epoch():
-    # switch to training mode
+    # switch to training
     model.train()
 
     losses = []
@@ -56,8 +64,10 @@ def train_epoch():
         x = x.float().to(device)
         y_true = label.to(device)
 
+        # the forward pass through the model
         y_prob = model(x)
 
+        # we could also use 'F.one_hot(y_true)' for 'y_true', but this would be slower
         loss = criterion(y_prob, y_true)
         optimizer.zero_grad() # reset gradients
         loss.backward() # compute gradients
@@ -107,7 +117,7 @@ def fit_classifier():
     torch.save(model.state_dict(), os.path.join(experiment, 'terminal.pt'))
 
 
-# build model from configuration.
+# build model from configuration
 def make_model(n_mels, n_steps):
     model_name = config.model_name
     n_classes = config.n_classes
@@ -131,20 +141,21 @@ def make_model(n_mels, n_steps):
 
 if __name__ == "__main__":
     print_config(config)
-    print("starting kaggle training")
+    # prevent mac from sleeping during training
+    if sys.platform == "darwin":  # macos
+        caffeinate_process = subprocess.Popen(['caffeinate', '-d'])
+        print("preventing mac from sleeping during training...")
     
     data_path = config.esc50_path
     
-    # setup device for kaggle (prefer cuda)
+    # setup device (mps for m1 mac, cuda for nvidia, cpu for others)
     if torch.cuda.is_available():
-        device = torch.device("cuda:0")
-        print(f"using cuda gpu: {torch.cuda.get_device_name()}")
+        device = torch.device(f"cuda:{config.device_id}")
     elif torch.backends.mps.is_available():
         device = torch.device("mps")
-        print("using apple silicon gpu")
     else:
         device = torch.device("cpu")
-        print("using cpu")
+    print(f"using device: {device}")
 
     # configure logging and output directories
     float_fmt = ".3f"
@@ -159,7 +170,7 @@ if __name__ == "__main__":
     print("calculating global mean and std for normalization...")
     global_stats = get_global_stats(data_path)
     print("done.")
-    
+
     for test_fold in config.test_folds:
         experiment = os.path.join(experiment_root, f'{test_fold}')
         if not os.path.exists(experiment):
@@ -169,13 +180,13 @@ if __name__ == "__main__":
         with Tee(os.path.join(experiment, 'train.log'), 'w', 1, encoding='utf-8',
                  newline='\n', proc_cr=True):
             # create a partial function for the dataset to ensure consistent settings
-            get_fold_dataset = partial(ESC50, root=data_path, download=False,
+            get_fold_dataset = partial(ESC50, root=data_path, download=True,
                                        test_folds={test_fold}, global_mean_std=global_stats[test_fold - 1])
 
             train_set = get_fold_dataset(subset="train")
             print('*****')
             print(f'train folds are {train_set.train_folds} and test fold is {train_set.test_folds}')
-            print('enhanced data augmentation for kaggle')
+            print('random wave cropping')
 
             # setup dataloader for training
             train_loader = torch.utils.data.DataLoader(train_set,
@@ -186,7 +197,7 @@ if __name__ == "__main__":
                                                        persistent_workers=config.persistent_workers,
                                                        pin_memory=True,
                                                        )
-
+            
             # setup dataloader for validation
             val_loader = torch.utils.data.DataLoader(get_fold_dataset(subset="val"),
                                                      batch_size=config.batch_size,
@@ -210,7 +221,6 @@ if __name__ == "__main__":
             # define loss function and optimizer
             criterion = nn.CrossEntropyLoss().to(device)
             
-            # optimizer settings for kaggle
             optimizer = torch.optim.AdamW(model.parameters(),
                                          lr=config.lr,
                                          weight_decay=config.weight_decay)
@@ -228,11 +238,11 @@ if __name__ == "__main__":
             test_loader = torch.utils.data.DataLoader(get_fold_dataset(subset="test"),
                                                       batch_size=config.batch_size,
                                                       shuffle=False,
-                                                      num_workers=0,
+                                                      num_workers=0,  # config.num_workers,
                                                       drop_last=False,
                                                       )
-            
-            # test with the best model saved during training
+            # test with best model
+            # model.load_state_dict(torch.load(os.path.join(experiment, 'best_val_loss.pt')))
             model.load_state_dict(torch.load(os.path.join(experiment, 'best_val_loss.pt'), map_location=device))
             acc, _, _ = test(model, test_loader, criterion=criterion, device=device)
             scores[test_fold] = acc
@@ -240,8 +250,12 @@ if __name__ == "__main__":
             print()
             print()
 
-    # calculate and print overall accuracy
+    # overall accuracy
     scores_df = pd.DataFrame.from_dict(scores, orient='index', columns=['accuracy'])
-    print("final kaggle results:")
     print(scores_df)
-    print(f"overall accuracy: {scores_df['accuracy'].mean():{float_fmt}}") 
+    print(f"overall accuracy: {scores_df['accuracy'].mean():{float_fmt}}")
+
+    # Terminate the caffeinate process when the script is done
+    if 'caffeinate_process' in locals() and caffeinate_process.poll() is None:
+        caffeinate_process.terminate()
+        print("\nscript finished, allowing mac to sleep again.")
