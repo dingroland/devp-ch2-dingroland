@@ -27,7 +27,9 @@ output_size=config.n_classes,\
 time_reduce=1)"
 
 #resnet constructor
-model_constructor = "SimpleResNet(num_classes=config.n_classes)"
+simple_rnn_model_constructor = "SimpleResNet(num_classes=config.n_classes)"
+
+model_constructor = "ResNet(num_classes=config.n_classes)"
 
 
 # ###TRAINING

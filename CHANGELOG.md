@@ -30,3 +30,11 @@
 - Extended the baseline `SimpleResNet` architecture to use 4 residual blocks, the first model with only 1 underfitted.
 - Each block maintains 16 channels, no downsampling.
 - Training on 100 epochs again
+- training acc at around 16% after 40 epochs -> still underfitting
+
+## 2025-07-05 – Deeper ResNet
+
+- Downsampling and channel expansion (16 → 32 → 64)
+- Global avg pooling + dropout before final classifier
+- Same input/output shape and training setup as before
+- Still uses baseline data augmentation (random crop + pad)

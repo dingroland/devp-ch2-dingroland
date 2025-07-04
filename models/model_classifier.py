@@ -82,3 +82,88 @@ class SimpleResNet(nn.Module):
         return self.fc(x)
 
 
+# better ResNet
+
+class BetterResidualBlock(nn.Module):
+    """
+    Basic residual block: Conv2D -> BN -> ReLU -> Conv2D -> BN + skip connection.
+    Optionally downsamples the input via stride=2 and projection conv.
+    """
+    def __init__(self, in_channels, out_channels, downsample=False):
+        super().__init__()
+        stride = 2 if downsample else 1
+
+        # First conv with possible stride for downsampling
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1,
+                               stride=stride, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+
+        # Second conv keeps output shape
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3,
+                               padding=1, stride=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+
+        self.relu = nn.ReLU(inplace=True)
+
+        # Projection layer for skip connection if shape changes
+        self.downsample = None
+        if downsample or in_channels != out_channels:
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=1,
+                          stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+
+    def forward(self, x):
+        identity = x
+
+        out = self.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+
+        if self.downsample:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+        return out
+
+
+class ResNet(nn.Module):
+    """
+    - initial conv layer
+    - 3 residual stages with increasing channels and optional downsampling
+    - global average pooling
+    - dropout
+    - final linear classification head
+    """
+    def __init__(self, num_classes=50):
+        super().__init__()
+        self.in_channels = 16
+
+        # Initial conv (input is 1-channel Mel-spectrogram)
+        self.conv = nn.Conv2d(1, 16, kernel_size=3, padding=1, bias=False)
+        self.bn = nn.BatchNorm2d(16)
+        self.relu = nn.ReLU(inplace=True)
+
+        # Residual stages (output channels increase, downsampling)
+        self.layer1 = BetterResidualBlock(16, 32, downsample=True)
+        self.layer2 = BetterResidualBlock(32, 64, downsample=True)
+        self.layer3 = BetterResidualBlock(64, 64)  # No downsampling, same shape
+
+        # Global average pooling to reduce to 1x1
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.dropout = nn.Dropout(0.3)
+        self.fc = nn.Linear(64, num_classes)
+
+    def forward(self, x):
+        x = self.relu(self.bn(self.conv(x)))  # Shape: (B, 16, H, W)
+
+        x = self.layer1(x)  # -> (B, 32, H/2, W/2)
+        x = self.layer2(x)  # -> (B, 64, H/4, W/4)
+        x = self.layer3(x)  # -> (B, 64, H/4, W/4)
+
+        x = self.global_pool(x)  # -> (B, 64, 1, 1)
+        x = x.view(x.size(0), -1)  # Flatten to (B, 64)
+
+        x = self.dropout(x)
+        return self.fc(x)  # Final shape: (B, num_classes)
