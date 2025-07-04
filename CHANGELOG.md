@@ -23,3 +23,10 @@
   - Early stopping on validation loss
 - Data Augmentation:
   - Reused the baseline augmentation strategy
+
+
+## 2025-07-04 – Minor Improvement to ResNet
+
+- Extended the baseline `SimpleResNet` architecture to use 4 residual blocks, the first model with only 1 underfitted.
+- Each block maintains 16 channels, no downsampling.
+- Training on 100 epochs again

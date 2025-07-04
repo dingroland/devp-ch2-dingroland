@@ -63,14 +63,20 @@ class SimpleResNet(nn.Module):
         self.bn = nn.BatchNorm2d(16)
         self.relu = nn.ReLU(inplace=True)
 
-        self.res_block = ResidualBlock(16)
+        self.res_block1 = ResidualBlock(16)
+        self.res_block2 = ResidualBlock(16)
+        self.res_block3 = ResidualBlock(16)
+        self.res_block4 = ResidualBlock(16)
 
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(16, num_classes)
 
     def forward(self, x):
         x = self.relu(self.bn(self.conv(x)))
-        x = self.res_block(x)
+        x = self.res_block1(x)
+        x = self.res_block2(x)
+        x = self.res_block3(x)
+        x = self.res_block4(x)
         x = self.global_pool(x)
         x = x.view(x.size(0), -1)
         return self.fc(x)
