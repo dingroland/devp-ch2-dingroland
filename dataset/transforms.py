@@ -31,10 +31,15 @@ class RandomNoise:
         self.max_noise = max_noise
         
     def addNoise(self, wave):
+        if isinstance(wave, np.ndarray):
+            wave = torch.from_numpy(wave)
+
         noise_val = random.uniform(self.min_noise, self.max_noise)
         noise = torch.from_numpy(np.random.normal(0, noise_val, wave.shape[0]))
         noisy_wave = wave + noise
-        
+
+        #noisy_wave = np.concatenate((wave, noise))
+
         return noisy_wave
     
     def __call__(self, x):
