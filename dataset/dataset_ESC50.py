@@ -94,10 +94,10 @@ class ESC50(data.Dataset):
             # augment training data with transformations that include randomness
             # transforms can be applied on wave and spectral representation
             self.wave_transforms = transforms.Compose(
-                torch.Tensor,
-                #transforms.RandomScale(max_scale=1.25),
+                transforms.RandomNoise(min_noise=0.001, max_noise=0.01),
+                transforms.RandomScale(max_scale=1.25),
                 transforms.RandomPadding(out_len=out_len),
-                transforms.RandomCrop(out_len=out_len)
+                transforms.RandomCrop(out_len=out_len),
             )
 
             self.spec_transforms = transforms.Compose(
@@ -106,6 +106,8 @@ class ESC50(data.Dataset):
                 # lambda non-pickleable, problem on windows, replace with partial function
                 torch.Tensor,
                 partial(torch.unsqueeze, dim=0),
+                transforms.FrequencyMask(max_width=16, numbers=2),  # best values depend on input shape
+                transforms.TimeMask(max_width=32, numbers=2),
             )
 
         else:

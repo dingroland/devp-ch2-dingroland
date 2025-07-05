@@ -7,7 +7,7 @@
   - 5-fold distribution is balanced and consistent
 - Visualised class distribution
 
-## 2025-07-04 – Added SimpleResNet Model (First Improvement Step)
+## 2025-07-04 – Added SimpleResNet Model
 
 - Implemented a minimal ResNet-style CNN architecture (`SimpleResNet`) to improve from the baseline MLP
 - Given the sequential and structured nature of log-Mel spectrograms (time × frequency), a ResNet was chosen
@@ -55,7 +55,7 @@
 - Replaced `ReduceLROnPlateau` with `OneCycleLR` for more dynamic learning rate adaptation
 - Uses cosine annealing with warm-up:
   - `max_lr = 1e-2`, `div_factor = 25`, `final_div_factor = 1e4`
-  - Warm-up over first 10% of epochs, then gradual cosine decay
+  - Warm-up over first 25% of epochs, then gradual cosine decay
 - Scheduler now steps per batch instead of per epoch
 - Added a fourth residual block to the `ResNet` backbone:
   - `BetterResidualBlock(64 → 64)` added after the third block
@@ -65,4 +65,9 @@
 - Activated `torch.nn.DataParallel` for multi-GPU training (2× NVIDIA T4 on Kaggle)
 - time per epoch reduced for 30s to 15s
 - TestAcc    0.670 , TestLoss   1.220 after first fold 
+
+## 2025-07-05 – Add more Augmentation
 - model seems to underfit data -> increase `warm_up` to 25% of epochs
+- TestAcc    0.660, TestLoss   1.238 after one fold. still not performing good enough
+- Add `RandomScale`, `RandomNoise`, `FrequencyMask` and `TimeMask`
+
