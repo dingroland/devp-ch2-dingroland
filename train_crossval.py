@@ -246,7 +246,7 @@ if __name__ == "__main__":
                 max_lr=config.lr,
                 steps_per_epoch=len(train_loader),
                 epochs=config.epochs,
-                pct_start=0.1,  # 10% warmup
+                pct_start=0.25,  # 20% warmup
                 anneal_strategy='cos',  # cosine down
                 div_factor=25,  # initial LR = max_lr / 25
                 final_div_factor=1e4  # final LR = max_lr / 1e4

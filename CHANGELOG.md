@@ -61,4 +61,8 @@
   - `BetterResidualBlock(64 → 64)` added after the third block
 - No additional downsampling to preserve final spatial resolution
 - Increases model capacity while retaining feature map size
-
+- Enabled GPU acceleration with automatic detection of available CUDA devices
+- Activated `torch.nn.DataParallel` for multi-GPU training (2× NVIDIA T4 on Kaggle)
+- time per epoch reduced for 30s to 15s
+- TestAcc    0.670 , TestLoss   1.220 after first fold 
+- model seems to underfit data -> increase `warm_up` to 25% of epochs
