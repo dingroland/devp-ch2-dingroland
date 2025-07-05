@@ -77,6 +77,11 @@ class RandomCrop:
         self.train = train
 
     def random_crop(self, signal: torch.Tensor) -> torch.Tensor:
+
+        # If  signal is too short return it unchanged
+        if signal.shape[-1] <= self.out_len:
+            return signal
+
         if self.train:
             left = np.random.randint(0, signal.shape[-1] - self.out_len)
         else:
