@@ -25,7 +25,7 @@
   - Reused the baseline augmentation strategy
 
 
-## 2025-07-04 – Minor Improvement to ResNet
+## 2025-07-04 – Improvement to ResNet
 
 - Extended the baseline `SimpleResNet` architecture to use 4 residual blocks, the first model with only 1 underfitted.
 - Each block maintains 16 channels, no downsampling.
@@ -38,3 +38,12 @@
 - Global avg pooling + dropout before final classifier
 - Same input/output shape and training setup as before
 - Still uses baseline data augmentation (random crop + pad)
+- training acc at around 22% after 40 epochs -> still underfitting
+
+## 2025-07-05 – Learning Rate Scheduling Added
+
+- Switched from fixed `StepLR` to adaptive `ReduceLROnPlateau` scheduler
+- Reduces LR by factor of 0.5 if validation loss doesn't improve for 5 epochs
+- Increased initial learning rate to `1e-2` for faster early convergence
+- LR now printed per epoch for better training insight
+- data augmentation fixed to return minimum signal length

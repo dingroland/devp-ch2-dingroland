@@ -84,6 +84,8 @@ def train_epoch():
         samples_count += y_true.shape[0]
 
     acc = corrects / samples_count
+    torch.cuda.empty_cache()
+
     return acc, losses
 
 
@@ -122,7 +124,9 @@ def fit_classifier():
             break
 
         # advance the optimization scheduler
-        scheduler.step()
+        scheduler.step(val_loss_avg)
+        print(f"Current LR: {optimizer.param_groups[0]['lr']:.6f}")
+
     # save full model
     torch.save(model.state_dict(), os.path.join(experiment, 'terminal.pt'))
 
@@ -138,8 +142,22 @@ def make_model():
 
 if __name__ == "__main__":
     data_path = config.esc50_path
+
+    # Check for available CUDA device(s)
     use_cuda = torch.cuda.is_available()
     device = torch.device(f"cuda:{config.device_id}" if use_cuda else "cpu")
+
+    if use_cuda:
+        print(f"CUDA available: {torch.cuda.device_count()} device(s)")
+        if torch.cuda.device_count() > 1:
+            print("Using nn.DataParallel across multiple GPUs")
+    else:
+        print("Running on CPU")
+
+
+
+    #use_cuda = torch.cuda.is_available()
+    #device = torch.device(f"cuda:{config.device_id}" if use_cuda else "cpu")
 
     # digits for logging
     float_fmt = ".3f"
@@ -203,9 +221,19 @@ if __name__ == "__main__":
                                         momentum=0.9,
                                         weight_decay=config.weight_decay)
 
-            scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                        step_size=config.step_size,
-                                                        gamma=config.gamma)
+            #scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+            #                                            step_size=config.step_size,
+            #                                            gamma=config.gamma)
+
+            # imporved lr scheduler
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode='min',  # monitor validation loss
+                factor=0.5,  # halve the learning rate
+                patience=5,  # wait 5 epochs before reducing
+                verbose=True,
+                min_lr=1e-6
+            )
 
             # fit the model using only training and validation data, no testing data allowed here
             print()

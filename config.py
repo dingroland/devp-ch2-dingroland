@@ -48,7 +48,7 @@ epochs = 100
 #epochs = 1
 # early stopping after epochs with no improvement
 patience = 20
-lr = 1e-3
+lr = 1e-2
 weight_decay = 1e-3
 warm_epochs = 10
 gamma = 0.8
