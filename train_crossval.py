@@ -15,6 +15,8 @@ from models.utils import EarlyStopping, Tee
 from dataset.dataset_ESC50 import ESC50
 import config
 
+from torch.optim.lr_scheduler import CosineAnnealingLR
+
 
 
 
@@ -78,6 +80,7 @@ def train_epoch():
         losses.append(loss.item())
         # minimize the loss via the gradient - adapts the model parameters
         optimizer.step()
+        scheduler.step()
 
         y_pred = torch.argmax(y_prob, dim=1)
         corrects += (y_pred == y_true).sum().item()
@@ -124,7 +127,7 @@ def fit_classifier():
             break
 
         # advance the optimization scheduler
-        scheduler.step(val_loss_avg)
+        #scheduler.step(val_loss_avg)
         print(f"Current LR: {optimizer.param_groups[0]['lr']:.6f}")
 
     # save full model
@@ -209,7 +212,8 @@ if __name__ == "__main__":
             print()
             # instantiate model
             model = make_model()
-            # model = nn.DataParallel(model, device_ids=config.device_ids)
+            if torch.cuda.device_count() > 1:
+                model = nn.DataParallel(model)
             model = model.to(device)
             print('*****')
 
@@ -226,13 +230,26 @@ if __name__ == "__main__":
             #                                            gamma=config.gamma)
 
             # imporved lr scheduler
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            #    optimizer,
+            #    mode='min',  # monitor validation loss
+            #    factor=0.5,  # halve the learning rate
+            #    patience=5,  # wait 5 epochs before reducing
+            #    verbose=True,
+            #    min_lr=1e-6
+            #)
+
+            from torch.optim.lr_scheduler import OneCycleLR
+
+            scheduler = OneCycleLR(
                 optimizer,
-                mode='min',  # monitor validation loss
-                factor=0.5,  # halve the learning rate
-                patience=5,  # wait 5 epochs before reducing
-                verbose=True,
-                min_lr=1e-6
+                max_lr=config.lr,
+                steps_per_epoch=len(train_loader),
+                epochs=config.epochs,
+                pct_start=0.1,  # 10% warmup
+                anneal_strategy='cos',  # cosine down
+                div_factor=25,  # initial LR = max_lr / 25
+                final_div_factor=1e4  # final LR = max_lr / 1e4
             )
 
             # fit the model using only training and validation data, no testing data allowed here

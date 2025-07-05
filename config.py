@@ -43,7 +43,7 @@ num_workers = 4 #for kaggle
 # for local Windows or Linux machine
 # num_workers = 6#16
 persistent_workers = True
-persistent_workers = False
+#persistent_workers = False
 epochs = 100
 #epochs = 1
 # early stopping after epochs with no improvement

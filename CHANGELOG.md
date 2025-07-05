@@ -47,3 +47,18 @@
 - Increased initial learning rate to `1e-2` for faster early convergence
 - LR now printed per epoch for better training insight
 - data augmentation fixed to return minimum signal length
+- 60% acc after first fold shows strong improvement. still not enough training stopped.
+
+
+## 2025-07-05 – Switched to OneCycleLR Scheduler
+
+- Replaced `ReduceLROnPlateau` with `OneCycleLR` for more dynamic learning rate adaptation
+- Uses cosine annealing with warm-up:
+  - `max_lr = 1e-2`, `div_factor = 25`, `final_div_factor = 1e4`
+  - Warm-up over first 10% of epochs, then gradual cosine decay
+- Scheduler now steps per batch instead of per epoch
+- Added a fourth residual block to the `ResNet` backbone:
+  - `BetterResidualBlock(64 → 64)` added after the third block
+- No additional downsampling to preserve final spatial resolution
+- Increases model capacity while retaining feature map size
+

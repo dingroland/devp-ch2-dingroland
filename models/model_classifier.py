@@ -149,6 +149,7 @@ class ResNet(nn.Module):
         self.layer1 = BetterResidualBlock(16, 32, downsample=True)
         self.layer2 = BetterResidualBlock(32, 64, downsample=True)
         self.layer3 = BetterResidualBlock(64, 64)  # No downsampling, same shape
+        self.layer4 = BetterResidualBlock(64, 64)
 
         # Global average pooling to reduce to 1x1
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
@@ -161,6 +162,8 @@ class ResNet(nn.Module):
         x = self.layer1(x)  # -> (B, 32, H/2, W/2)
         x = self.layer2(x)  # -> (B, 64, H/4, W/4)
         x = self.layer3(x)  # -> (B, 64, H/4, W/4)
+        x = self.layer4(x)
+
 
         x = self.global_pool(x)  # -> (B, 64, 1, 1)
         x = x.view(x.size(0), -1)  # Flatten to (B, 64)
