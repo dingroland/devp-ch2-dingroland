@@ -131,7 +131,7 @@ class BetterResidualBlock(nn.Module):
 class ResNet(nn.Module):
     """
     - initial conv layer
-    - 3 residual stages with increasing channels and optional downsampling
+    - 4 residual stages with increasing channels and optional downsampling
     - global average pooling
     - dropout
     - final linear classification head
@@ -148,25 +148,28 @@ class ResNet(nn.Module):
         # Residual stages (output channels increase, downsampling)
         self.layer1 = BetterResidualBlock(16, 32, downsample=True)
         self.layer2 = BetterResidualBlock(32, 64, downsample=True)
-        self.layer3 = BetterResidualBlock(64, 64)  # No downsampling, same shape
-        self.layer4 = BetterResidualBlock(64, 64)
+        self.layer3 = BetterResidualBlock(64, 128, downsample=True)
+        self.layer4 = BetterResidualBlock(128, 128)
+        self.layer5 = BetterResidualBlock(128, 128)
+
 
         # Global average pooling to reduce to 1x1
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.dropout = nn.Dropout(0.3)
-        self.fc = nn.Linear(64, num_classes)
+        self.fc = nn.Linear(128, num_classes)
 
     def forward(self, x):
         x = self.relu(self.bn(self.conv(x)))  # Shape: (B, 16, H, W)
 
         x = self.layer1(x)  # -> (B, 32, H/2, W/2)
         x = self.layer2(x)  # -> (B, 64, H/4, W/4)
-        x = self.layer3(x)  # -> (B, 64, H/4, W/4)
-        x = self.layer4(x)
+        x = self.layer3(x)  # -> (B, 128, H/8, W/8)
+        x = self.layer4(x)  # -> (B, 128, H/8, W/8)
+        x = self.layer5(x)  # -> (B, 128, H/8, W/8)
 
 
-        x = self.global_pool(x)  # -> (B, 64, 1, 1)
-        x = x.view(x.size(0), -1)  # Flatten to (B, 64)
+        x = self.global_pool(x)  # -> (B, 128, 1, 1)
+        x = x.view(x.size(0), -1)  # Flatten to (B, 128)
 
         x = self.dropout(x)
         return self.fc(x)  # Final shape: (B, num_classes)

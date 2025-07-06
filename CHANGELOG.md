@@ -71,3 +71,9 @@
 - TestAcc    0.660, TestLoss   1.238 after one fold. still not performing good enough
 - Add `RandomScale`, `RandomNoise`, `FrequencyMask` and `TimeMask`
 
+## 2025-07-06 – Model, Optimizer 
+- Increased model capacity to better capture complex features and combat underfitting.
+- Deepened the `ResNet` by adding a fifth residual block.
+- Widened the network by increasing channels in the third stage 
+- Replaced `SGD` with `AdamW` for potentially faster convergence and improved generalization.
+- Adjusted max learning rate to `1e-3`
