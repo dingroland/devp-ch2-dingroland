@@ -47,6 +47,8 @@ if __name__ == "__main__":
     print('*****')
     print("WARNING: Using hardcoded global mean and std. Depends on feature settings!")
     model = make_model()
+    # adapt for multi-gpu training
+    model = nn.DataParallel(model)
     model = model.to(device)
     print('*****')
 

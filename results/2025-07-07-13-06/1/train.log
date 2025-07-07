@@ -1,0 +1,213 @@
+*****
+train folds are {2, 3, 4, 5} and test fold is {1}
+
+ResNet(num_classes=config.n_classes)
+*****
+
+  1%|1            | 1/100 [00:35<57:58, 35.14s/ep] TrnAcc=0.020 ValAcc=0.013 TrnLoss=4.080 ValLoss=3.918 < inf --> checkpoint
+Current LR: 0.000044
+  2%|2            | 2/100 [00:57<44:56, 27.52s/ep] TrnAcc=0.027 ValAcc=0.037 TrnLoss=3.937 ValLoss=3.794 < 3.918 --> checkpoint
+Current LR: 0.000055
+  3%|3            | 3/100 [01:18<39:49, 24.64s/ep] TrnAcc=0.043 ValAcc=0.041 TrnLoss=3.818 ValLoss=3.704 < 3.794 --> checkpoint
+Current LR: 0.000074
+  4%|5            | 4/100 [01:39<36:48, 23.00s/ep] TrnAcc=0.056 ValAcc=0.047 TrnLoss=3.739 ValLoss=3.599 < 3.704 --> checkpoint
+Current LR: 0.000100
+  5%|6            | 5/100 [02:00<35:24, 22.37s/ep] TrnAcc=0.057 ValAcc=0.056 TrnLoss=3.668 ValLoss=3.501 < 3.599 --> checkpoint
+Current LR: 0.000132
+  6%|7            | 6/100 [02:21<34:14, 21.86s/ep] TrnAcc=0.077 ValAcc=0.072 TrnLoss=3.567 ValLoss=3.443 < 3.501 --> checkpoint
+Current LR: 0.000171
+  7%|9            | 7/100 [02:42<33:50, 21.83s/ep] TrnAcc=0.094 ValAcc=0.062 TrnLoss=3.454 ValLoss=3.330 < 3.443 --> checkpoint
+Current LR: 0.000215
+  8%|#            | 8/100 [03:03<33:03, 21.56s/ep] TrnAcc=0.116 ValAcc=0.125 TrnLoss=3.357 ValLoss=3.337 
+Current LR: 0.000264
+  9%|#1           | 9/100 [03:24<32:19, 21.32s/ep] TrnAcc=0.134 ValAcc=0.119 TrnLoss=3.251 ValLoss=3.181 < 3.330 --> checkpoint
+Current LR: 0.000317
+ 10%|#2          | 10/100 [03:44<31:26, 20.97s/ep] TrnAcc=0.142 ValAcc=0.209 TrnLoss=3.155 ValLoss=2.912 < 3.181 --> checkpoint
+Current LR: 0.000373
+ 11%|#3          | 11/100 [04:05<31:03, 20.94s/ep] TrnAcc=0.170 ValAcc=0.203 TrnLoss=3.075 ValLoss=2.916 
+Current LR: 0.000431
+ 12%|#4          | 12/100 [04:25<30:21, 20.70s/ep] TrnAcc=0.189 ValAcc=0.234 TrnLoss=2.936 ValLoss=2.713 < 2.912 --> checkpoint
+Current LR: 0.000491
+ 13%|#5          | 13/100 [04:46<30:06, 20.76s/ep] TrnAcc=0.221 ValAcc=0.272 TrnLoss=2.791 ValLoss=2.741 
+Current LR: 0.000552
+ 14%|#6          | 14/100 [05:07<29:45, 20.77s/ep] TrnAcc=0.217 ValAcc=0.247 TrnLoss=2.771 ValLoss=2.789 
+Current LR: 0.000612
+ 15%|#8          | 15/100 [05:27<29:15, 20.65s/ep] TrnAcc=0.253 ValAcc=0.234 TrnLoss=2.684 ValLoss=2.937 
+Current LR: 0.000670
+ 16%|#9          | 16/100 [05:49<29:07, 20.80s/ep] TrnAcc=0.271 ValAcc=0.259 TrnLoss=2.613 ValLoss=2.502 < 2.713 --> checkpoint
+Current LR: 0.000726
+ 17%|##          | 17/100 [06:10<28:58, 20.94s/ep] TrnAcc=0.307 ValAcc=0.306 TrnLoss=2.443 ValLoss=2.388 < 2.502 --> checkpoint
+Current LR: 0.000779
+ 18%|##1         | 18/100 [06:32<29:06, 21.30s/ep] TrnAcc=0.332 ValAcc=0.300 TrnLoss=2.394 ValLoss=2.336 < 2.388 --> checkpoint
+Current LR: 0.000828
+ 19%|##2         | 19/100 [06:54<28:59, 21.47s/ep] TrnAcc=0.333 ValAcc=0.369 TrnLoss=2.337 ValLoss=2.227 < 2.336 --> checkpoint
+Current LR: 0.000871
+ 20%|##4         | 20/100 [07:16<28:42, 21.53s/ep] TrnAcc=0.355 ValAcc=0.350 TrnLoss=2.219 ValLoss=2.250 
+Current LR: 0.000910
+ 21%|##5         | 21/100 [07:37<28:13, 21.44s/ep] TrnAcc=0.369 ValAcc=0.372 TrnLoss=2.173 ValLoss=2.090 < 2.227 --> checkpoint
+Current LR: 0.000942
+ 22%|##6         | 22/100 [07:59<28:01, 21.56s/ep] TrnAcc=0.401 ValAcc=0.469 TrnLoss=2.072 ValLoss=1.846 < 2.090 --> checkpoint
+Current LR: 0.000967
+ 23%|##7         | 23/100 [08:20<27:44, 21.61s/ep] TrnAcc=0.427 ValAcc=0.388 TrnLoss=1.999 ValLoss=2.093 
+Current LR: 0.000986
+ 24%|##8         | 24/100 [08:42<27:19, 21.57s/ep] TrnAcc=0.404 ValAcc=0.381 TrnLoss=2.010 ValLoss=2.119 
+Current LR: 0.000997
+ 25%|###         | 25/100 [09:04<27:03, 21.64s/ep] TrnAcc=0.445 ValAcc=0.412 TrnLoss=1.910 ValLoss=2.016 
+Current LR: 0.001000
+ 26%|###1        | 26/100 [09:25<26:46, 21.71s/ep] TrnAcc=0.478 ValAcc=0.522 TrnLoss=1.796 ValLoss=1.555 < 1.846 --> checkpoint
+Current LR: 0.001000
+ 27%|###2        | 27/100 [09:47<26:11, 21.52s/ep] TrnAcc=0.490 ValAcc=0.597 TrnLoss=1.748 ValLoss=1.412 < 1.555 --> checkpoint
+Current LR: 0.000998
+ 28%|###3        | 28/100 [10:08<25:56, 21.62s/ep] TrnAcc=0.526 ValAcc=0.550 TrnLoss=1.663 ValLoss=1.528 
+Current LR: 0.000996
+ 29%|###4        | 29/100 [10:31<25:51, 21.85s/ep] TrnAcc=0.520 ValAcc=0.434 TrnLoss=1.673 ValLoss=2.099 
+Current LR: 0.000993
+ 30%|###6        | 30/100 [10:51<24:58, 21.40s/ep] TrnAcc=0.520 ValAcc=0.369 TrnLoss=1.657 ValLoss=2.581 
+Current LR: 0.000989
+ 31%|###7        | 31/100 [11:12<24:27, 21.27s/ep] TrnAcc=0.539 ValAcc=0.491 TrnLoss=1.596 ValLoss=1.676 
+Current LR: 0.000984
+ 32%|###8        | 32/100 [11:33<23:53, 21.08s/ep] TrnAcc=0.543 ValAcc=0.503 TrnLoss=1.547 ValLoss=1.858 
+Current LR: 0.000978
+ 33%|###9        | 33/100 [11:53<23:25, 20.98s/ep] TrnAcc=0.579 ValAcc=0.606 TrnLoss=1.447 ValLoss=1.291 < 1.412 --> checkpoint
+Current LR: 0.000972
+ 34%|####        | 34/100 [12:16<23:27, 21.32s/ep] TrnAcc=0.559 ValAcc=0.591 TrnLoss=1.461 ValLoss=1.320 
+Current LR: 0.000965
+ 35%|####1       | 35/100 [12:36<22:47, 21.03s/ep] TrnAcc=0.591 ValAcc=0.569 TrnLoss=1.410 ValLoss=1.367 
+Current LR: 0.000956
+ 36%|####3       | 36/100 [12:57<22:17, 20.89s/ep] TrnAcc=0.609 ValAcc=0.419 TrnLoss=1.384 ValLoss=2.535 
+Current LR: 0.000947
+ 37%|####4       | 37/100 [13:17<21:54, 20.86s/ep] TrnAcc=0.601 ValAcc=0.525 TrnLoss=1.344 ValLoss=2.109 
+Current LR: 0.000938
+ 38%|####5       | 38/100 [13:38<21:30, 20.81s/ep] TrnAcc=0.653 ValAcc=0.597 TrnLoss=1.190 ValLoss=1.501 
+Current LR: 0.000927
+ 39%|####6       | 39/100 [13:59<21:12, 20.86s/ep] TrnAcc=0.637 ValAcc=0.588 TrnLoss=1.246 ValLoss=1.383 
+Current LR: 0.000916
+ 40%|####8       | 40/100 [14:20<20:52, 20.87s/ep] TrnAcc=0.650 ValAcc=0.644 TrnLoss=1.213 ValLoss=1.230 < 1.291 --> checkpoint
+Current LR: 0.000904
+ 41%|####9       | 41/100 [14:40<20:21, 20.71s/ep] TrnAcc=0.660 ValAcc=0.591 TrnLoss=1.171 ValLoss=1.465 
+Current LR: 0.000891
+ 42%|#####       | 42/100 [15:01<20:04, 20.76s/ep] TrnAcc=0.666 ValAcc=0.619 TrnLoss=1.132 ValLoss=1.374 
+Current LR: 0.000878
+ 43%|#####1      | 43/100 [15:22<19:44, 20.78s/ep] TrnAcc=0.682 ValAcc=0.653 TrnLoss=1.088 ValLoss=1.203 < 1.230 --> checkpoint
+Current LR: 0.000864
+ 44%|#####2      | 44/100 [15:42<19:16, 20.65s/ep] TrnAcc=0.688 ValAcc=0.700 TrnLoss=1.060 ValLoss=1.163 < 1.203 --> checkpoint
+Current LR: 0.000849
+ 45%|#####4      | 45/100 [16:03<19:03, 20.78s/ep] TrnAcc=0.693 ValAcc=0.672 TrnLoss=1.064 ValLoss=1.241 
+Current LR: 0.000834
+ 46%|#####5      | 46/100 [16:24<18:40, 20.74s/ep] TrnAcc=0.710 ValAcc=0.637 TrnLoss=1.020 ValLoss=1.265 
+Current LR: 0.000818
+ 47%|#####6      | 47/100 [16:45<18:15, 20.67s/ep] TrnAcc=0.680 ValAcc=0.681 TrnLoss=1.019 ValLoss=1.135 < 1.163 --> checkpoint
+Current LR: 0.000801
+ 48%|#####7      | 48/100 [17:06<18:01, 20.81s/ep] TrnAcc=0.697 ValAcc=0.741 TrnLoss=0.972 ValLoss=0.932 < 1.135 --> checkpoint
+Current LR: 0.000784
+ 49%|#####8      | 49/100 [17:27<17:43, 20.84s/ep] TrnAcc=0.717 ValAcc=0.681 TrnLoss=1.016 ValLoss=1.149 
+Current LR: 0.000767
+ 50%|######      | 50/100 [17:49<17:40, 21.21s/ep] TrnAcc=0.723 ValAcc=0.722 TrnLoss=0.924 ValLoss=1.089 
+Current LR: 0.000749
+ 51%|######1     | 51/100 [18:09<17:12, 21.07s/ep] TrnAcc=0.743 ValAcc=0.703 TrnLoss=0.921 ValLoss=1.030 
+Current LR: 0.000731
+ 52%|######2     | 52/100 [18:30<16:40, 20.84s/ep] TrnAcc=0.765 ValAcc=0.766 TrnLoss=0.871 ValLoss=0.902 < 0.932 --> checkpoint
+Current LR: 0.000712
+ 53%|######3     | 53/100 [18:51<16:22, 20.89s/ep] TrnAcc=0.754 ValAcc=0.716 TrnLoss=0.872 ValLoss=0.987 
+Current LR: 0.000693
+ 54%|######4     | 54/100 [19:11<15:59, 20.86s/ep] TrnAcc=0.771 ValAcc=0.669 TrnLoss=0.835 ValLoss=1.162 
+Current LR: 0.000673
+ 55%|######6     | 55/100 [19:32<15:27, 20.62s/ep] TrnAcc=0.762 ValAcc=0.713 TrnLoss=0.825 ValLoss=1.077 
+Current LR: 0.000654
+ 56%|######7     | 56/100 [19:52<15:09, 20.66s/ep] TrnAcc=0.773 ValAcc=0.719 TrnLoss=0.807 ValLoss=1.007 
+Current LR: 0.000633
+ 57%|######8     | 57/100 [20:13<14:48, 20.65s/ep] TrnAcc=0.788 ValAcc=0.719 TrnLoss=0.744 ValLoss=0.933 
+Current LR: 0.000613
+ 58%|######9     | 58/100 [20:33<14:23, 20.56s/ep] TrnAcc=0.780 ValAcc=0.756 TrnLoss=0.778 ValLoss=1.007 
+Current LR: 0.000593
+ 59%|#######     | 59/100 [20:54<14:08, 20.70s/ep] TrnAcc=0.797 ValAcc=0.781 TrnLoss=0.725 ValLoss=0.847 < 0.902 --> checkpoint
+Current LR: 0.000572
+ 60%|#######2    | 60/100 [21:15<13:41, 20.55s/ep] TrnAcc=0.787 ValAcc=0.775 TrnLoss=0.752 ValLoss=0.869 
+Current LR: 0.000551
+ 61%|#######3    | 61/100 [21:35<13:26, 20.67s/ep] TrnAcc=0.794 ValAcc=0.800 TrnLoss=0.718 ValLoss=0.768 < 0.847 --> checkpoint
+Current LR: 0.000530
+ 62%|#######4    | 62/100 [21:57<13:11, 20.82s/ep] TrnAcc=0.820 ValAcc=0.766 TrnLoss=0.691 ValLoss=0.825 
+Current LR: 0.000509
+ 63%|#######5    | 63/100 [22:17<12:40, 20.54s/ep] TrnAcc=0.811 ValAcc=0.775 TrnLoss=0.712 ValLoss=0.840 
+Current LR: 0.000488
+ 64%|#######6    | 64/100 [22:37<12:23, 20.66s/ep] TrnAcc=0.804 ValAcc=0.812 TrnLoss=0.653 ValLoss=0.807 
+Current LR: 0.000468
+ 65%|#######8    | 65/100 [22:57<11:55, 20.45s/ep] TrnAcc=0.816 ValAcc=0.787 TrnLoss=0.658 ValLoss=0.870 
+Current LR: 0.000447
+ 66%|#######9    | 66/100 [23:17<11:28, 20.24s/ep] TrnAcc=0.832 ValAcc=0.812 TrnLoss=0.617 ValLoss=0.709 < 0.768 --> checkpoint
+Current LR: 0.000426
+ 67%|########    | 67/100 [23:38<11:09, 20.28s/ep] TrnAcc=0.839 ValAcc=0.809 TrnLoss=0.591 ValLoss=0.703 < 0.709 --> checkpoint
+Current LR: 0.000405
+ 68%|########1   | 68/100 [23:57<10:45, 20.18s/ep] TrnAcc=0.830 ValAcc=0.831 TrnLoss=0.608 ValLoss=0.689 < 0.703 --> checkpoint
+Current LR: 0.000385
+ 69%|########2   | 69/100 [24:18<10:28, 20.27s/ep] TrnAcc=0.830 ValAcc=0.803 TrnLoss=0.610 ValLoss=0.802 
+Current LR: 0.000365
+ 70%|########3   | 70/100 [24:38<10:07, 20.24s/ep] TrnAcc=0.841 ValAcc=0.825 TrnLoss=0.568 ValLoss=0.666 < 0.689 --> checkpoint
+Current LR: 0.000344
+ 71%|########5   | 71/100 [24:58<09:41, 20.05s/ep] TrnAcc=0.843 ValAcc=0.809 TrnLoss=0.568 ValLoss=0.731 
+Current LR: 0.000325
+ 72%|########6   | 72/100 [25:18<09:22, 20.10s/ep] TrnAcc=0.838 ValAcc=0.822 TrnLoss=0.543 ValLoss=0.668 
+Current LR: 0.000305
+ 73%|########7   | 73/100 [25:38<09:02, 20.09s/ep] TrnAcc=0.853 ValAcc=0.822 TrnLoss=0.527 ValLoss=0.642 < 0.666 --> checkpoint
+Current LR: 0.000286
+ 74%|########8   | 74/100 [25:58<08:39, 19.98s/ep] TrnAcc=0.867 ValAcc=0.847 TrnLoss=0.520 ValLoss=0.643 
+Current LR: 0.000267
+ 75%|#########   | 75/100 [26:18<08:25, 20.21s/ep] TrnAcc=0.866 ValAcc=0.838 TrnLoss=0.498 ValLoss=0.644 
+Current LR: 0.000249
+ 76%|#########1  | 76/100 [26:38<08:03, 20.13s/ep] TrnAcc=0.875 ValAcc=0.831 TrnLoss=0.498 ValLoss=0.630 < 0.642 --> checkpoint
+Current LR: 0.000231
+ 77%|#########2  | 77/100 [26:59<07:44, 20.21s/ep] TrnAcc=0.863 ValAcc=0.828 TrnLoss=0.509 ValLoss=0.646 
+Current LR: 0.000214
+ 78%|#########3  | 78/100 [27:19<07:26, 20.31s/ep] TrnAcc=0.862 ValAcc=0.856 TrnLoss=0.511 ValLoss=0.638 
+Current LR: 0.000197
+ 79%|#########4  | 79/100 [27:40<07:05, 20.26s/ep] TrnAcc=0.871 ValAcc=0.825 TrnLoss=0.500 ValLoss=0.644 
+Current LR: 0.000180
+ 80%|#########6  | 80/100 [28:00<06:46, 20.32s/ep] TrnAcc=0.881 ValAcc=0.859 TrnLoss=0.456 ValLoss=0.595 < 0.630 --> checkpoint
+Current LR: 0.000165
+ 81%|#########7  | 81/100 [28:20<06:25, 20.27s/ep] TrnAcc=0.899 ValAcc=0.844 TrnLoss=0.445 ValLoss=0.584 < 0.595 --> checkpoint
+Current LR: 0.000149
+ 82%|#########8  | 82/100 [28:40<06:03, 20.21s/ep] TrnAcc=0.896 ValAcc=0.844 TrnLoss=0.445 ValLoss=0.614 
+Current LR: 0.000135
+ 83%|#########9  | 83/100 [29:01<05:46, 20.38s/ep] TrnAcc=0.897 ValAcc=0.853 TrnLoss=0.443 ValLoss=0.581 < 0.584 --> checkpoint
+Current LR: 0.000121
+ 84%|##########  | 84/100 [29:21<05:24, 20.29s/ep] TrnAcc=0.891 ValAcc=0.850 TrnLoss=0.436 ValLoss=0.574 < 0.581 --> checkpoint
+Current LR: 0.000108
+ 85%|##########2 | 85/100 [29:42<05:07, 20.50s/ep] TrnAcc=0.903 ValAcc=0.859 TrnLoss=0.399 ValLoss=0.577 
+Current LR: 0.000095
+ 86%|##########3 | 86/100 [30:03<04:48, 20.60s/ep] TrnAcc=0.908 ValAcc=0.859 TrnLoss=0.393 ValLoss=0.578 
+Current LR: 0.000083
+ 87%|##########4 | 87/100 [30:23<04:26, 20.49s/ep] TrnAcc=0.887 ValAcc=0.856 TrnLoss=0.428 ValLoss=0.571 < 0.574 --> checkpoint
+Current LR: 0.000072
+ 88%|##########5 | 88/100 [30:44<04:07, 20.61s/ep] TrnAcc=0.908 ValAcc=0.866 TrnLoss=0.397 ValLoss=0.574 
+Current LR: 0.000061
+ 89%|##########6 | 89/100 [31:05<03:47, 20.64s/ep] TrnAcc=0.899 ValAcc=0.872 TrnLoss=0.411 ValLoss=0.556 < 0.571 --> checkpoint
+Current LR: 0.000052
+ 90%|##########8 | 90/100 [31:25<03:25, 20.52s/ep] TrnAcc=0.910 ValAcc=0.866 TrnLoss=0.388 ValLoss=0.559 
+Current LR: 0.000043
+ 91%|##########9 | 91/100 [31:46<03:05, 20.56s/ep] TrnAcc=0.912 ValAcc=0.853 TrnLoss=0.388 ValLoss=0.575 
+Current LR: 0.000035
+ 92%|########### | 92/100 [32:06<02:43, 20.43s/ep] TrnAcc=0.895 ValAcc=0.859 TrnLoss=0.424 ValLoss=0.572 
+Current LR: 0.000027
+ 93%|###########1| 93/100 [32:27<02:24, 20.58s/ep] TrnAcc=0.913 ValAcc=0.856 TrnLoss=0.382 ValLoss=0.577 
+Current LR: 0.000021
+ 94%|###########2| 94/100 [32:48<02:04, 20.72s/ep] TrnAcc=0.901 ValAcc=0.859 TrnLoss=0.392 ValLoss=0.573 
+Current LR: 0.000015
+ 95%|###########3| 95/100 [33:08<01:42, 20.50s/ep] TrnAcc=0.912 ValAcc=0.863 TrnLoss=0.387 ValLoss=0.584 
+Current LR: 0.000011
+ 96%|###########5| 96/100 [33:28<01:21, 20.50s/ep] TrnAcc=0.913 ValAcc=0.859 TrnLoss=0.364 ValLoss=0.579 
+Current LR: 0.000007
+ 97%|###########6| 97/100 [33:49<01:01, 20.66s/ep] TrnAcc=0.907 ValAcc=0.856 TrnLoss=0.389 ValLoss=0.575 
+Current LR: 0.000004
+ 98%|###########7| 98/100 [34:09<00:41, 20.54s/ep] TrnAcc=0.907 ValAcc=0.863 TrnLoss=0.386 ValLoss=0.571 
+Current LR: 0.000002
+ 99%|###########8| 99/100 [34:30<00:20, 20.61s/ep] TrnAcc=0.916 ValAcc=0.863 TrnLoss=0.378 ValLoss=0.581 
+Current LR: 0.000000
+100%|###########| 100/100 [34:51<00:00, 20.71s/ep] TrnAcc=0.895 ValAcc=0.856 TrnLoss=0.409 ValLoss=0.577 
+Current LR: 0.000000
+100%|###########| 100/100 [34:51<00:00, 20.92s/ep]
+
+test results/2025-07-07-13-06/1
+TestAcc    0.782
+TestLoss   0.763
+dtype: float64
+

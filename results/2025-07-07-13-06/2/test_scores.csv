@@ -1,0 +1,3 @@
+checkpoint,metric,value
+best_val_loss.pt,TestAcc,0.8
+best_val_loss.pt,TestLoss,0.7563355565071106
