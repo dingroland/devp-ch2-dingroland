@@ -39,11 +39,11 @@ device_id = 0
 batch_size = 64
 # in Colab to avoid Warning
 #num_workers = 2
-num_workers = 0 #for kaggle
+num_workers = 4 #for kaggle
 # for local Windows or Linux machine
 # num_workers = 6#16
-#persistent_workers = True
-persistent_workers = False #disable parallel loading 
+persistent_workers = True
+#persistent_workers = False #disable parallel loading 
 epochs = 100
 #epochs = 1
 # early stopping after epochs with no improvement

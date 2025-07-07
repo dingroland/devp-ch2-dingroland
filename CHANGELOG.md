@@ -85,9 +85,17 @@
 - Now running at around 45s/ epoch 
 
 
-
-
-## 2025-07-06 – Added Mixed Precision (TODO)
+## 2025-07-06 – Added Mixed Precision 
 - Integrated `torch.cuda.amp` with `autocast` and `GradScaler` to better use the T4 GPU's Tensor Cores
 - By performing most operations in `float16` instead of `float32` a speedup in epoch time should be visible
 - `GradScaler` is instantiated only once per training run 
+- The `autocast` context manager is used to automatically convert model operations to use the faster `float16` data type
+- A `GradScaler` was implemented to dynamically scale the loss. This prevents gradients from being rounded to zero in `float16`—by keeping them in a representable range
+- Training at around 40s/ epoch still too slow
+
+## 2025-07-06 – Spawn instead of fork
+- https://stackoverflow.com/questions/64095876/multiprocessing-fork-vs-spawn
+- The training process would  hang and deadlock when using multiple `DataLoader` workers (`num_workers > 0`), which is necessary for performance
+- The default multiprocessing start method on Linux, `fork`, is unsafe. It copies the parent process's state but not its threads, which can lead to deadlocks when a worker process inherits a locked resource without the thread to unlock it
+- Set the start method to `spawn`. This creates fresh, independent worker processes that do not inherit the parent's state to avoid a deadlock
+- Slight startup overhead of `spawn` is reduced by using `persistent_workers=True`

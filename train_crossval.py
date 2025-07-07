@@ -187,6 +187,15 @@ def make_model():
 
 
 if __name__ == "__main__":
+    import torch.multiprocessing as mp
+
+    try:
+        mp.set_start_method('spawn', force=True)
+        print("-----> Multiprocessing start method set to 'spawn'.")
+    except RuntimeError:
+        pass # The multiprocessing context can only be set once per session
+        
+
     data_path = config.esc50_path
 
     # Check for available CUDA device(s)
