@@ -17,6 +17,9 @@ import config
 
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
+# Import  tools for mixed precision
+from torch.cuda.amp import autocast, GradScaler
+
 
 
 
@@ -41,11 +44,25 @@ def test(model, dataloader, criterion, device):
             x = x.float().to(device)
             y_true = label.to(device)
 
-            # the forward pass through the model
-            y_prob = model(x)
 
-            loss = criterion(y_prob, y_true)
+
+
+
+            # the forward pass through the model
+            #y_prob = model(x)
+
+            #loss = criterion(y_prob, y_true)
+            #losses.append(loss.item())
+
+
+
+            # Use autocast for the forward pass during validation
+            with autocast():
+                y_prob = model(x)
+                loss = criterion(y_prob, y_true)
+            
             losses.append(loss.item())
+
 
             y_pred = torch.argmax(y_prob, dim=1)
             corrects += (y_pred == y_true).sum().item()
@@ -69,18 +86,44 @@ def train_epoch():
         y_true = label.to(device)
 
         # the forward pass through the model
-        y_prob = model(x)
+        #y_prob = model(x)
 
         # we could also use 'F.one_hot(y_true)' for 'y_true', but this would be slower
-        loss = criterion(y_prob, y_true)
+        #loss = criterion(y_prob, y_true)
         # reset the gradients to zero - avoids accumulation
-        optimizer.zero_grad()
+        #optimizer.zero_grad()
         # compute the gradient with backpropagation
-        loss.backward()
-        losses.append(loss.item())
+        #loss.backward()
+        #losses.append(loss.item())
         # minimize the loss via the gradient - adapts the model parameters
-        optimizer.step()
+        #optimizer.step()
+        #scheduler.step()
+
+
+
+
+        optimizer.zero_grad()
+
+        # Forward pass with autocasting
+        with autocast():
+            y_prob = model(x)
+            loss = criterion(y_prob, y_true)
+        
+        losses.append(loss.item())
+
+        # Scales loss. Calls backward() on scaled loss to create scaled gradients
+        scaler.scale(loss).backward()
+
+        # scaler.step() unscales the gradients and calls optimizer.step()
+        scaler.step(optimizer)
+
+        # Updates the scale for next iteration
+        scaler.update()
+
+        # Step the scheduler
         scheduler.step()
+
+
 
         y_pred = torch.argmax(y_prob, dim=1)
         corrects += (y_pred == y_true).sum().item()
@@ -224,7 +267,7 @@ if __name__ == "__main__":
                                          lr=config.lr,
                                          weight_decay=config.weight_decay)
 
-            
+            scaler = GradScaler()
             
             #optimizer = torch.optim.SGD(model.parameters(),
             #                                    lr=config.lr,

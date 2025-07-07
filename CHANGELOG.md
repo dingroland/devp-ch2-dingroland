@@ -81,11 +81,13 @@
 
 ## 2025-07-06 – Disable parallel Data Loading
 - Training froze after 1.5 folds most likely most likely due to worker freeze 
-- Running current setupt to get +72% result afterwards add mixed precision and better data augmentation
+- Set `num_workers` to `0` to prevent the training process from freezing in the Kaggle environment
+- Now running at around 45s/ epoch 
 
 
 
 
 ## 2025-07-06 – Added Mixed Precision (TODO)
-- Integrated `torch.cuda.amp` with `autocast` and `GradScaler` to  speed up training on T4 GPUs
-
+- Integrated `torch.cuda.amp` with `autocast` and `GradScaler` to better use the T4 GPU's Tensor Cores
+- By performing most operations in `float16` instead of `float32` a speedup in epoch time should be visible
+- `GradScaler` is instantiated only once per training run 
