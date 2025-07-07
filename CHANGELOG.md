@@ -77,3 +77,15 @@
 - Widened the network by increasing channels in the third stage 
 - Replaced `SGD` with `AdamW` for potentially faster convergence and improved generalization.
 - Adjusted max learning rate to `1e-3`
+
+
+## 2025-07-06 – Disable parallel Data Loading
+- Training froze after 1.5 folds most likely most likely due to worker freeze 
+- Running current setupt to get +72% result afterwards add mixed precision and better data augmentation
+
+
+
+
+## 2025-07-06 – Added Mixed Precision (TODO)
+- Integrated `torch.cuda.amp` with `autocast` and `GradScaler` to  speed up training on T4 GPUs
+
