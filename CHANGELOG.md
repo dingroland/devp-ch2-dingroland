@@ -99,3 +99,6 @@
 - Set the start method to `spawn`. This creates fresh, independent worker processes that do not inherit the parent's state to avoid a deadlock
 - Slight startup overhead of `spawn` is reduced by using `persistent_workers=True`
 - Mean Test Acc 0.795, Test Loss 0.746 this should be enough for the 72% threshold
+- `test_crossval.py` script failed with a `RuntimeError` due to mismatched layer names when loading the saved model state
+- model was saved from a multi-GPU training setup, which uses `nn.DataParallel` and prefixes all layer names with `"module."`. The test script was creating a single-GPU model and could not find the expected layer names
+- Wrapped the model instantiation in the test script with `nn.DataParallel` 
